@@ -1,6 +1,7 @@
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import useStore from '../store/useStore';
+import FearFeedbackModal from './fear/FearFeedbackModal';
 
 const NAV_ITEMS = [
   { path: '/app', icon: '📊', label: 'Dashboard', end: true },
@@ -22,9 +23,13 @@ export default function AppLayout() {
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+  
+  const fearModalData = useStore(s => s.fearModalData);
+  const clearFearModal = useStore(s => s.clearFearModal);
 
   useEffect(() => {
     startStockTicker();
+    useStore.getState().fetchFearData();
     const snapInterval = setInterval(recordPortfolioSnapshot, 30000);
     return () => {
       stopStockTicker();
@@ -69,7 +74,7 @@ export default function AppLayout() {
       </nav>
 
       {/* Main content area */}
-      <div style={{ flex: 1, marginLeft: '72px', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ flex: 1, marginLeft: '72px', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         {/* Top bar */}
         <header className="top-bar" style={{ left: '72px' }}>
           <div style={{ position: 'relative' }}>
@@ -159,10 +164,16 @@ export default function AppLayout() {
         </div>
 
         {/* Page content */}
-        <main style={{ padding: '24px', flex: 1 }}>
+        <main style={{ padding: '24px', flex: 1, minWidth: 0 }}>
           <Outlet />
         </main>
       </div>
+
+      <FearFeedbackModal 
+        isOpen={!!fearModalData} 
+        onClose={clearFearModal} 
+        logData={fearModalData} 
+      />
 
       <style>{`
         @keyframes tickerScroll {

@@ -227,17 +227,48 @@ const useStore = create((set, get) => ({
   orders: loadState('orders', []),
 
   // ── FEAR SCORE ──
-  fearScore: loadState('fearScore', { score: 65, fearClass: 'MEDIUM', confidence: 50 }),
+  fearScore: loadState('fearScore', { score: 80, fearClass: 'HIGH' }),
   fearHistory: loadState('fearHistory', []),
+  fearModalData: null, // used to trigger the modal
 
-  updateFearScore: (behaviorData) => {
-    const result = computeFearScore(behaviorData);
-    const history = [...get().fearHistory, { ...result, timestamp: Date.now() }].slice(-50);
-    set({ fearScore: result, fearHistory: history });
-    saveState('fearScore', result);
-    saveState('fearHistory', history);
-    get().updateUser({ fearScore: result.score, fearClass: result.fearClass });
+  fetchFearData: async () => {
+    const { user } = get();
+    if (!user) return;
+    try {
+       const { api } = await import('../services/api.js');
+       const scoreRes = await api.getFearScore(user._id);
+       const historyRes = await api.getFearHistory(user._id);
+       
+       set({ 
+         fearScore: { score: scoreRes.score, fearClass: scoreRes.classification },
+         fearHistory: historyRes
+       });
+    } catch(e) { console.error('Failed to fetch fear data', e); }
   },
+
+  updateFearScore: async (action, hesitationMs = 0, isPositiveOutcome = true, manualDelta = 0) => {
+    try {
+      const { api } = await import('../services/api.js');
+      const result = await api.logBehavior(action, hesitationMs, isPositiveOutcome, manualDelta);
+      
+      const newScore = { score: result.score, fearClass: result.classification };
+      const historyUpdate = [...get().fearHistory, { timestamp: Date.now(), score: result.score, action }].slice(-50);
+      
+      set({ 
+        fearScore: newScore, 
+        fearHistory: historyUpdate,
+        // Trigger modal only if delta is non-zero and action is simulation
+        fearModalData: (result.delta !== 0 && action !== 'QUIZ_RESULT') ? result : null
+      });
+
+      saveState('fearScore', newScore);
+      saveState('fearHistory', historyUpdate);
+      get().updateUser({ fearScore: result.score, fearClass: result.classification });
+      get().checkMilestones();
+    } catch(e) { console.error('Fear log failed', e); }
+  },
+
+  clearFearModal: () => set({ fearModalData: null }),
 
   // ── MILESTONES ──
   milestones: loadState('milestones', []),

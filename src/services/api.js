@@ -89,5 +89,30 @@ export const api = {
   initStocks: async () => {
     const res = await fetch(`${BASE_URL}/stock/init`, { method: 'POST', headers: getAuthHeaders() });
     return res.json();
+  },
+
+  // Fear Score
+  getFearScore: async (userId) => {
+    const res = await fetch(`${BASE_URL}/fear/${userId}`, { headers: getAuthHeaders() });
+    return res.json();
+  },
+  getFearHistory: async (userId) => {
+    const res = await fetch(`${BASE_URL}/fear/${userId}/history`, { headers: getAuthHeaders() });
+    return res.json();
+  },
+  logBehavior: async (action, hesitationMs, isPositiveOutcome, delta) => {
+    const res = await fetch(`${BASE_URL}/fear/behavior/log`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ action, hesitationMs, isPositiveOutcome, delta })
+    });
+    return res.json();
+  },
+  getPortfolioRecommendations: async () => {
+    const res = await fetch(`${BASE_URL}/fear/portfolio/recommendations`, {
+      method: 'POST',
+      headers: getAuthHeaders()
+    });
+    return res.json();
   }
 };

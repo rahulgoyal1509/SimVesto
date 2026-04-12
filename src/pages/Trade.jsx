@@ -19,6 +19,9 @@ export default function Trade() {
   const fearScore = useStore(s => s.fearScore);
   const geminiApiKey = useStore(s => s.geminiApiKey);
   const addSimulation = useStore(s => s.addSimulation);
+  const updateFearScore = useStore(s => s.updateFearScore);
+  
+  const [entryTime, setEntryTime] = useState(Date.now());
 
   const stock = useMemo(() => stocks.find(s => s.symbol === symbol), [stocks, symbol]);
   const holding = useMemo(() => holdings.find(h => h.stockId === stock?.id), [holdings, stock]);
@@ -85,6 +88,9 @@ export default function Trade() {
         ...result, timestamp: Date.now(),
       });
 
+      // Fear Score: Practice reduces fear
+      updateFearScore('SIMULATION_COMPLETED', 0, true);
+
       // Generate AI narration
       setAiLoading(true);
       generateNarration({
@@ -103,14 +109,21 @@ export default function Trade() {
     }, 500);
   }, [stock, totalCost, fearScore, geminiApiKey, user]);
 
-  const executeTrade = () => {
+  const executeTrade = async () => {
     if (!stock) return;
     let result;
     if (tab === 'BUY') {
-      result = buyStock(stock.id, quantity);
+      result = await buyStock(stock.id, quantity);
     } else {
-      result = sellStock(stock.id, quantity);
+      result = await sellStock(stock.id, quantity);
     }
+    
+    // Fear Metric Logging
+    const hesitationMs = Date.now() - entryTime;
+    const isPositive = result?.pnl !== undefined ? result.pnl >= 0 : true;
+    updateFearScore('TRADE_DECISION', hesitationMs, isPositive);
+    setEntryTime(Date.now()); // Reset hesitation timer for next trade
+
     setOrderResult(result);
     setShowOrderModal(true);
     setQuantity(1);
@@ -157,9 +170,9 @@ export default function Trade() {
       </motion.div>
 
       {/* Main Layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 340px', gap: '24px', alignItems: 'flex-start' }}>
         {/* Left — Chart */}
-        <div>
+        <div style={{ minWidth: 0 }}>
           <motion.div className="card" initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ padding: '20px', marginBottom: '16px' }}>
             {/* Timeframe + Chart type */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
@@ -306,9 +319,8 @@ export default function Trade() {
         </div>
 
         {/* Right — Trade Panel */}
-        <div>
-          <motion.div className="card" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-            style={{ position: 'sticky', top: '80px', padding: '20px' }}>
+        <div style={{ width: '100%' }}>
+          <div className="card" style={{ padding: '20px' }}>
 
             {/* Buy/Sell Tabs */}
             <div className="tab-group" style={{ marginBottom: '20px' }}>
@@ -412,7 +424,7 @@ export default function Trade() {
                 </div>
               </div>
             )}
-          </motion.div>
+          </div>
         </div>
       </div>
 
