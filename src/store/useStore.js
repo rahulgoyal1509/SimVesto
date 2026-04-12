@@ -100,78 +100,68 @@ const useStore = create((set, get) => ({
   },
 
   // ── TRADING ──
-  buyStock: (stockId, quantity) => {
+  buyStock: async (stockId, quantity) => {
     const { stocks, user, holdings } = get();
     const stock = stocks.find(s => s.id === stockId);
     if (!stock || !user) return { success: false, message: 'Stock not found' };
 
-    const totalCost = parseFloat((stock.currentPrice * quantity).toFixed(2));
-    if (totalCost > user.iqCoins) return { success: false, message: 'Insufficient IQ Coins' };
+    try {
+      const { api } = await import('../services/api.js');
+      const response = await api.buyStock(stock.symbol, quantity);
+      
+      if (!response.message || response.message !== 'Purchase successful') {
+         return { success: false, message: response.message || 'Server error' };
+      }
 
-    // Deduct coins
-    const newCoins = parseFloat((user.iqCoins - totalCost).toFixed(2));
+      // Update local coins from server
+      const newCoins = response.balance;
 
-    // Update or create holding
-    const existingIdx = holdings.findIndex(h => h.stockId === stockId);
-    let newHoldings = [...holdings];
+      const totalCost = parseFloat((stock.currentPrice * quantity).toFixed(2));
+      const existingIdx = holdings.findIndex(h => h.stockId === stockId);
+      let newHoldings = [...holdings];
 
-    if (existingIdx >= 0) {
-      const existing = newHoldings[existingIdx];
-      const totalQty = existing.quantity + quantity;
-      const newAvg = (existing.avgBuyPrice * existing.quantity + stock.currentPrice * quantity) / totalQty;
-      newHoldings[existingIdx] = {
-        ...existing,
-        quantity: totalQty,
-        avgBuyPrice: parseFloat(newAvg.toFixed(2)),
-        currentPrice: stock.currentPrice,
-        currentValue: parseFloat((totalQty * stock.currentPrice).toFixed(2)),
-        pnl: parseFloat((totalQty * stock.currentPrice - totalQty * newAvg).toFixed(2)),
-        pnlPct: parseFloat(((stock.currentPrice - newAvg) / newAvg * 100).toFixed(2)),
+      if (existingIdx >= 0) {
+        const existing = newHoldings[existingIdx];
+        const totalQty = existing.quantity + quantity;
+        const newAvg = (existing.avgBuyPrice * existing.quantity + stock.currentPrice * quantity) / totalQty;
+        newHoldings[existingIdx] = {
+          ...existing,
+          quantity: totalQty,
+          avgBuyPrice: parseFloat(newAvg.toFixed(2)),
+          currentPrice: stock.currentPrice,
+          currentValue: parseFloat((totalQty * stock.currentPrice).toFixed(2)),
+          pnl: parseFloat((totalQty * stock.currentPrice - totalQty * newAvg).toFixed(2)),
+          pnlPct: parseFloat(((stock.currentPrice - newAvg) / newAvg * 100).toFixed(2)),
+        };
+      } else {
+        newHoldings.push({
+          stockId, symbol: stock.symbol, name: stock.name, quantity,
+          avgBuyPrice: stock.currentPrice, currentPrice: stock.currentPrice,
+          currentValue: totalCost, pnl: 0, pnlPct: 0, boughtAt: Date.now(),
+        });
+      }
+
+      const order = {
+        id: Date.now(), stockId, symbol: stock.symbol, name: stock.name,
+        type: 'BUY', quantity, price: stock.currentPrice, totalCost,
+        timestamp: Date.now(), status: 'COMPLETED',
       };
-    } else {
-      newHoldings.push({
-        stockId,
-        symbol: stock.symbol,
-        name: stock.name,
-        quantity,
-        avgBuyPrice: stock.currentPrice,
-        currentPrice: stock.currentPrice,
-        currentValue: totalCost,
-        pnl: 0,
-        pnlPct: 0,
-        boughtAt: Date.now(),
-      });
+
+      const newOrders = [order, ...get().orders];
+
+      set({ holdings: newHoldings, orders: newOrders });
+      get().updateUser({ iqCoins: newCoins, totalTrades: (user.totalTrades || 0) + 1 });
+      saveState('holdings', newHoldings);
+      saveState('orders', newOrders);
+      get().checkMilestones();
+
+      return { success: true, order };
+    } catch (err) {
+      return { success: false, message: 'Server connection failed' };
     }
-
-    // Create order
-    const order = {
-      id: Date.now(),
-      stockId,
-      symbol: stock.symbol,
-      name: stock.name,
-      type: 'BUY',
-      quantity,
-      price: stock.currentPrice,
-      totalCost,
-      timestamp: Date.now(),
-      status: 'COMPLETED',
-    };
-
-    const newOrders = [order, ...get().orders];
-
-    set({ holdings: newHoldings, orders: newOrders });
-    get().updateUser({ iqCoins: newCoins, totalTrades: (user.totalTrades || 0) + 1 });
-
-    saveState('holdings', newHoldings);
-    saveState('orders', newOrders);
-
-    // Check milestones
-    get().checkMilestones();
-
-    return { success: true, order };
   },
 
-  sellStock: (stockId, quantity) => {
+  sellStock: async (stockId, quantity) => {
     const { stocks, user, holdings } = get();
     const stock = stocks.find(s => s.id === stockId);
     if (!stock || !user) return { success: false, message: 'Stock not found' };
@@ -182,69 +172,103 @@ const useStore = create((set, get) => ({
     const holding = holdings[holdingIdx];
     if (quantity > holding.quantity) return { success: false, message: 'Insufficient shares' };
 
-    const saleValue = parseFloat((stock.currentPrice * quantity).toFixed(2));
-    const costBasis = parseFloat((holding.avgBuyPrice * quantity).toFixed(2));
-    const tradePnL = parseFloat((saleValue - costBasis).toFixed(2));
+    try {
+      const { api } = await import('../services/api.js');
+      const response = await api.sellStock(stock.symbol, quantity);
 
-    // Add coins
-    const newCoins = parseFloat((user.iqCoins + saleValue).toFixed(2));
+      if (!response.message || response.message !== 'Sale successful') {
+         return { success: false, message: response.message || 'Server error' };
+      }
 
-    let newHoldings = [...holdings];
-    if (quantity >= holding.quantity) {
-      newHoldings.splice(holdingIdx, 1);
-    } else {
-      newHoldings[holdingIdx] = {
-        ...holding,
-        quantity: holding.quantity - quantity,
-        currentValue: parseFloat(((holding.quantity - quantity) * stock.currentPrice).toFixed(2)),
+      const saleValue = parseFloat((stock.currentPrice * quantity).toFixed(2));
+      const costBasis = parseFloat((holding.avgBuyPrice * quantity).toFixed(2));
+      const tradePnL = parseFloat((saleValue - costBasis).toFixed(2));
+
+      // Add coins
+      const newCoins = response.balance;
+
+      let newHoldings = [...holdings];
+      if (quantity >= holding.quantity) {
+        newHoldings.splice(holdingIdx, 1);
+      } else {
+        newHoldings[holdingIdx] = {
+          ...holding,
+          quantity: holding.quantity - quantity,
+          currentValue: parseFloat(((holding.quantity - quantity) * stock.currentPrice).toFixed(2)),
+        };
+      }
+
+      const order = {
+        id: Date.now(), stockId, symbol: stock.symbol, name: stock.name,
+        type: 'SELL', quantity, price: stock.currentPrice, totalCost: saleValue,
+        pnl: tradePnL, timestamp: Date.now(), status: 'COMPLETED',
       };
+
+      const newOrders = [order, ...get().orders];
+
+      set({ holdings: newHoldings, orders: newOrders });
+      get().updateUser({
+        iqCoins: newCoins,
+        totalTrades: (user.totalTrades || 0) + 1,
+        totalPnL: (user.totalPnL || 0) + tradePnL,
+      });
+
+      saveState('holdings', newHoldings);
+      saveState('orders', newOrders);
+      get().checkMilestones();
+
+      return { success: true, order, pnl: tradePnL };
+    } catch (err) {
+      return { success: false, message: 'Server connection failed' };
     }
-
-    const order = {
-      id: Date.now(),
-      stockId,
-      symbol: stock.symbol,
-      name: stock.name,
-      type: 'SELL',
-      quantity,
-      price: stock.currentPrice,
-      totalCost: saleValue,
-      pnl: tradePnL,
-      timestamp: Date.now(),
-      status: 'COMPLETED',
-    };
-
-    const newOrders = [order, ...get().orders];
-
-    set({ holdings: newHoldings, orders: newOrders });
-    get().updateUser({
-      iqCoins: newCoins,
-      totalTrades: (user.totalTrades || 0) + 1,
-      totalPnL: (user.totalPnL || 0) + tradePnL,
-    });
-
-    saveState('holdings', newHoldings);
-    saveState('orders', newOrders);
-    get().checkMilestones();
-
-    return { success: true, order, pnl: tradePnL };
   },
 
   // ── ORDERS ──
   orders: loadState('orders', []),
 
   // ── FEAR SCORE ──
-  fearScore: loadState('fearScore', { score: 65, fearClass: 'MEDIUM', confidence: 50 }),
+  fearScore: loadState('fearScore', { score: 80, fearClass: 'HIGH' }),
   fearHistory: loadState('fearHistory', []),
+  fearModalData: null, // used to trigger the modal
 
-  updateFearScore: (behaviorData) => {
-    const result = computeFearScore(behaviorData);
-    const history = [...get().fearHistory, { ...result, timestamp: Date.now() }].slice(-50);
-    set({ fearScore: result, fearHistory: history });
-    saveState('fearScore', result);
-    saveState('fearHistory', history);
-    get().updateUser({ fearScore: result.score, fearClass: result.fearClass });
+  fetchFearData: async () => {
+    const { user } = get();
+    if (!user) return;
+    try {
+       const { api } = await import('../services/api.js');
+       const scoreRes = await api.getFearScore(user._id);
+       const historyRes = await api.getFearHistory(user._id);
+       
+       set({ 
+         fearScore: { score: scoreRes.score, fearClass: scoreRes.classification },
+         fearHistory: historyRes
+       });
+    } catch(e) { console.error('Failed to fetch fear data', e); }
   },
+
+  updateFearScore: async (action, hesitationMs = 0, isPositiveOutcome = true, manualDelta = 0) => {
+    try {
+      const { api } = await import('../services/api.js');
+      const result = await api.logBehavior(action, hesitationMs, isPositiveOutcome, manualDelta);
+      
+      const newScore = { score: result.score, fearClass: result.classification };
+      const historyUpdate = [...get().fearHistory, { timestamp: Date.now(), score: result.score, action }].slice(-50);
+      
+      set({ 
+        fearScore: newScore, 
+        fearHistory: historyUpdate,
+        // Trigger modal only if delta is non-zero and action is simulation
+        fearModalData: (result.delta !== 0 && action !== 'QUIZ_RESULT') ? result : null
+      });
+
+      saveState('fearScore', newScore);
+      saveState('fearHistory', historyUpdate);
+      get().updateUser({ fearScore: result.score, fearClass: result.classification });
+      get().checkMilestones();
+    } catch(e) { console.error('Fear log failed', e); }
+  },
+
+  clearFearModal: () => set({ fearModalData: null }),
 
   // ── MILESTONES ──
   milestones: loadState('milestones', []),

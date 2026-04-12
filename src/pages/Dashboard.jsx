@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import useStore from '../store/useStore';
 import { getFearColor, getFearLabel } from '../engine/fearEngine';
+import FearBadge from '../components/fear/FearBadge';
 
 export default function Dashboard() {
   const user = useStore(s => s.user);
@@ -112,23 +113,8 @@ export default function Dashboard() {
         {/* Fear Score + Quick Actions */}
         <motion.div className="card" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}>
           <div style={{ display: 'flex', gap: '24px', alignItems: 'center', marginBottom: '20px' }}>
-            {/* Fear Gauge */}
-            <div style={{ position: 'relative', width: '110px', height: '110px', flexShrink: 0 }}>
-              <svg viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)' }}>
-                <circle cx="50" cy="50" r="42" fill="none" stroke="var(--bg-surface-3)" strokeWidth="6" />
-                <circle cx="50" cy="50" r="42" fill="none" stroke={fearColor} strokeWidth="6"
-                  strokeDasharray={`${(fearScore.score / 100) * 264} 264`}
-                  strokeLinecap="round" style={{ transition: 'stroke-dasharray 1s ease' }} />
-              </svg>
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '24px', fontWeight: 700, color: fearColor }}>
-                  {fearScore.score}
-                </div>
-                <div style={{ fontSize: '9px', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)' }}>
-                  Fear Score
-                </div>
-              </div>
-            </div>
+            {/* Real Fear Badge */}
+            <FearBadge score={fearScore.score} size="medium" />
             <div>
               <div style={{ fontSize: '14px', fontWeight: 600, marginBottom: '4px' }}>{fearLabel}</div>
               <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>

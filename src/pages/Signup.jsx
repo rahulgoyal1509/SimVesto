@@ -64,12 +64,25 @@ export default function Signup() {
   const updateFearScore = useStore(s => s.updateFearScore);
   const navigate = useNavigate();
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
     if (!name || !email || !password) { setError('Please fill in all fields.'); return; }
     if (password.length < 4) { setError('Password must be at least 4 characters.'); return; }
     setError('');
-    setStep('quiz');
+    
+    try {
+      const { api } = await import('../services/api.js');
+      const data = await api.register(email, password);
+      
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        setStep('quiz');
+      } else {
+        setError(data.message || 'Registration failed');
+      }
+    } catch (err) {
+      setError('Server connection failed');
+    }
   };
 
   const selectOption = (qIndex, option) => {

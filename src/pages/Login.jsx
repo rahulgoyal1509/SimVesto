@@ -17,25 +17,28 @@ export default function Login() {
     if (!email || !password) { setError('Please fill in all fields.'); return; }
     setLoading(true);
 
-    // Simulated login — check localStorage for existing user
-    setTimeout(() => {
-      const savedUser = localStorage.getItem('investiq_user');
-      if (savedUser) {
-        const user = JSON.parse(savedUser);
-        if (user.email === email) {
-          setUser(user);
-          navigate('/app');
-          return;
-        }
+    try {
+      const { api } = await import('../services/api.js');
+      const data = await api.login(email, password);
+      
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        // Sync wallet
+        const wallet = await api.getWallet();
+        setUser({
+          _id: data._id, name: email.split('@')[0], email,
+          iqCoins: wallet.balance || 10000, fearScore: 65, fearClass: 'MEDIUM', literacyScore: 5,
+          totalTrades: 0, totalPnL: 0, sessionCount: 1, createdAt: Date.now(),
+        });
+        navigate('/app');
+      } else {
+        setError(data.message || 'Login failed');
+        setLoading(false);
       }
-      // Demo login
-      setUser({
-        id: Date.now(), name: email.split('@')[0], email,
-        iqCoins: 10000, fearScore: 65, fearClass: 'MEDIUM', literacyScore: 5,
-        totalTrades: 0, totalPnL: 0, sessionCount: 1, createdAt: Date.now(),
-      });
-      navigate('/app');
-    }, 800);
+    } catch (err) {
+      setError('Server connection failed');
+      setLoading(false);
+    }
   };
 
   return (
