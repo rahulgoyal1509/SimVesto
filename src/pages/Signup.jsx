@@ -57,6 +57,7 @@ export default function Signup() {
   const [step, setStep] = useState('form'); // form | quiz | analyzing
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [registeredUserId, setRegisteredUserId] = useState(null);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [currentQ, setCurrentQ] = useState(0);
@@ -78,6 +79,7 @@ export default function Signup() {
       
       if (data.token) {
         localStorage.setItem('token', data.token);
+        setRegisteredUserId(data._id || null);
         setStep('quiz');
       } else {
         setError(data.message || 'Registration failed');
@@ -127,6 +129,7 @@ export default function Signup() {
       } catch { }
 
       const user = {
+        _id: registeredUserId || undefined,
         id: Date.now(), name, email,
         iqCoins: walletBalance, fearScore, fearClass: fearScore >= 65 ? 'HIGH' : fearScore >= 35 ? 'MEDIUM' : 'LOW',
         literacyScore: litScore, totalTrades: 0, totalPnL: 0, sessionCount: 1,

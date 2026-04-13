@@ -28,15 +28,37 @@ function saveState(key, value) {
   }
 }
 
-function getUserStorageKey(user, key) {
-  const identity = user?._id || user?.email || 'guest';
-  return `${STORAGE_PREFIX}${identity}_${key}`;
+function getUserIdentities(user) {
+  const identities = [user?._id, user?.id, user?.email, 'guest']
+    .map((value) => (value === null || value === undefined ? '' : String(value).trim()))
+    .filter(Boolean);
+
+  return [...new Set(identities)];
+}
+
+function getStorageKeysForIdentity(identity, key) {
+  return [
+    `${STORAGE_PREFIX}${identity}_${key}`,
+    `${LEGACY_STORAGE_PREFIX}${identity}_${key}`,
+  ];
 }
 
 function loadUserState(user, key, defaultValue) {
   try {
-    const saved = localStorage.getItem(getUserStorageKey(user, key));
-    return saved ? JSON.parse(saved) : defaultValue;
+    const identities = getUserIdentities(user);
+    for (const identity of identities) {
+      const keys = getStorageKeysForIdentity(identity, key);
+      for (const storageKey of keys) {
+        const saved = localStorage.getItem(storageKey);
+        if (!saved) continue;
+        try {
+          return JSON.parse(saved);
+        } catch {
+          return defaultValue;
+        }
+      }
+    }
+    return defaultValue;
   } catch {
     return defaultValue;
   }
@@ -44,7 +66,11 @@ function loadUserState(user, key, defaultValue) {
 
 function saveUserState(user, key, value) {
   try {
-    localStorage.setItem(getUserStorageKey(user, key), JSON.stringify(value));
+    const serialized = JSON.stringify(value);
+    const identities = getUserIdentities(user);
+    for (const identity of identities) {
+      localStorage.setItem(`${STORAGE_PREFIX}${identity}_${key}`, serialized);
+    }
   } catch (e) {
     console.warn('localStorage save failed:', e);
   }
