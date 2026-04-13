@@ -83,7 +83,7 @@ export default function Advisor() {
             </select>
           </div>
           <div>
-            <label className="form-label">Investment (IQ Coins)</label>
+            <label className="form-label">Investment (Coins)</label>
             <input type="number" className="form-input" min={100} value={investment}
               onChange={e => setInvestment(Math.max(100, Number(e.target.value)))}
               style={{ width: '100%', fontFamily: 'var(--font-mono)' }} />

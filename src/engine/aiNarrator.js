@@ -52,7 +52,7 @@ function buildPrompt(context) {
     : 'Be balanced and educational. Mix encouragement with honest data.';
 
   if (type === 'trade_suggestion') {
-    return `You are InvestIQ's AI trading advisor. The user has a fear score of ${fearScore}/100 (${fearClass} fear), literacy level ${literacyScore}/10.
+    return `You are SimVesto's AI trading advisor. The user has a fear score of ${fearScore}/100 (${fearClass} fear), literacy level ${literacyScore}/10.
 
 They are considering trading ${stockName} (${stockSymbol}).
 
@@ -74,7 +74,7 @@ Keep it under 60 words total. Use ₹ for currency.`;
   }
 
   if (type === 'portfolio_analysis') {
-    return `You are InvestIQ's AI portfolio analyst. The user has a fear score of ${fearScore}/100 (${fearClass} fear).
+    return `You are SimVesto's AI portfolio analyst. The user has a fear score of ${fearScore}/100 (${fearClass} fear).
 
 Current portfolio: ${JSON.stringify(portfolio)}
 Recent trades: ${JSON.stringify(tradeHistory?.slice(-5))}
@@ -90,7 +90,7 @@ Analyze their portfolio in 4-5 sentences:
 Keep it under 80 words. Use ₹ for currency.`;
   }
 
-  return `You are InvestIQ's AI investment advisor. ${tone} Provide a brief, helpful insight about investing for someone with a ${fearClass} fear level. Keep it under 50 words.`;
+  return `You are SimVesto's AI investment advisor. ${tone} Provide a brief, helpful insight about investing for someone with a ${fearClass} fear level. Keep it under 50 words.`;
 }
 
 async function simulateNarration(context, onToken) {
@@ -116,7 +116,7 @@ async function simulateNarration(context, onToken) {
   } else if (type === 'portfolio_analysis') {
     text = `Your portfolio shows a developing investment strategy. Focus on diversification across sectors to reduce risk. Track your trades closely — each one teaches you something about your risk tolerance. Keep simulating before committing to large positions.`;
   } else {
-    text = 'Welcome to InvestIQ. Start by exploring stocks and running simulations to build your confidence. Remember — every great investor started exactly where you are now.';
+    text = 'Welcome to SimVesto. Start by exploring stocks and running simulations to build your confidence. Remember — every great investor started exactly where you are now.';
   }
 
   if (onToken) {

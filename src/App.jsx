@@ -12,6 +12,7 @@ import Advisor from './pages/Advisor';
 import Chatbot from './pages/Chatbot';
 import Insights from './pages/Insights';
 import Profile from './pages/Profile';
+import CoinHistory from './pages/CoinHistory';
 import AppLayout from './components/AppLayout';
 
 function ProtectedRoute({ children }) {
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="explore" element={<Explore />} />
         <Route path="trade/:symbol" element={<Trade />} />
         <Route path="holdings" element={<Holdings />} />
+        <Route path="coins" element={<CoinHistory />} />
         <Route path="orders" element={<Orders />} />
         <Route path="advisor" element={<Advisor />} />
         <Route path="chat" element={<Chatbot />} />

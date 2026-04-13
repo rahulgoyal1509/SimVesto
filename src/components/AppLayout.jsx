@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { path: '/app', icon: '📊', label: 'Dashboard', end: true },
   { path: '/app/explore', icon: '🔍', label: 'Explore' },
   { path: '/app/holdings', icon: '💼', label: 'Holdings' },
+  { path: '/app/coins', icon: '🪙', label: 'Coin History' },
   { path: '/app/orders', icon: '📋', label: 'Orders' },
   { path: '/app/advisor', icon: '🤖', label: 'AI Advisor' },
   { path: '/app/chat', icon: '💬', label: 'Market Chatbot' },
@@ -20,6 +21,7 @@ export default function AppLayout() {
   const startRealtimeSync = useStore(s => s.startRealtimeSync);
   const stopRealtimeSync = useStore(s => s.stopRealtimeSync);
   const recordPortfolioSnapshot = useStore(s => s.recordPortfolioSnapshot);
+  const fetchTradeHistory = useStore(s => s.fetchTradeHistory);
   const navigate = useNavigate();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
@@ -32,12 +34,13 @@ export default function AppLayout() {
   useEffect(() => {
     startRealtimeSync(4000);
     useStore.getState().fetchFearData();
+    fetchTradeHistory();
     const snapInterval = setInterval(recordPortfolioSnapshot, 30000);
     return () => {
       stopRealtimeSync();
       clearInterval(snapInterval);
     };
-  }, [startRealtimeSync, stopRealtimeSync, recordPortfolioSnapshot]);
+  }, [startRealtimeSync, stopRealtimeSync, recordPortfolioSnapshot, fetchTradeHistory]);
 
   const filteredStocks = searchQuery
     ? stocks.filter(s =>
@@ -61,7 +64,7 @@ export default function AppLayout() {
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-primary)' }}>
       {/* Sidebar Navigation */}
       <nav className="app-nav">
-        <div className="app-nav-logo" onClick={() => navigate('/app')}>IQ</div>
+        <div className="app-nav-logo" onClick={() => navigate('/app')}>SV</div>
         {NAV_ITEMS.map(item => (
           <NavLink
             key={item.path}
@@ -139,7 +142,7 @@ export default function AppLayout() {
             <div className="coin-display">
               <div className="coin-icon">₹</div>
               <span>{(user?.iqCoins || 0).toLocaleString()}</span>
-              <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>IQ</span>
+              <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>Coins</span>
             </div>
             <div
               style={{

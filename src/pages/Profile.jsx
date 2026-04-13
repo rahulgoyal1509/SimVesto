@@ -10,12 +10,9 @@ export default function Profile() {
   const orders = useStore(s => s.orders);
   const holdings = useStore(s => s.holdings);
   const milestones = useStore(s => s.milestones);
-  const geminiApiKey = useStore(s => s.geminiApiKey);
-  const setGeminiApiKey = useStore(s => s.setGeminiApiKey);
   const logout = useStore(s => s.logout);
   const navigate = useNavigate();
 
-  const [apiKey, setApiKey] = useState(geminiApiKey || '');
   const [showCard, setShowCard] = useState(false);
   const cardRef = useRef(null);
 
@@ -24,10 +21,6 @@ export default function Profile() {
   const canShowCard = fearScore.score < 40;
 
   const totalPnL = orders.filter(o => o.pnl).reduce((s, o) => s + o.pnl, 0);
-
-  const saveApiKey = () => {
-    setGeminiApiKey(apiKey);
-  };
 
   const exportCard = async () => {
     if (!cardRef.current) return;
@@ -54,7 +47,7 @@ export default function Profile() {
       // Text
       ctx.fillStyle = '#f0f0f5';
       ctx.font = '700 28px Inter';
-      ctx.fillText('InvestIQ Confidence Card', 40, 60);
+      ctx.fillText('SimVesto Confidence Card', 40, 60);
 
       ctx.fillStyle = '#a0a0b8';
       ctx.font = '400 14px Inter';
@@ -94,7 +87,7 @@ export default function Profile() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'investiq-confidence-card.png';
+        a.download = 'simvesto-confidence-card.png';
         a.click();
         URL.revokeObjectURL(url);
       });
@@ -148,7 +141,7 @@ export default function Profile() {
               <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Financial literacy</div>
             </div>
             <div style={{ background: 'var(--bg-surface-2)', borderRadius: 'var(--radius-md)', padding: '12px', textAlign: 'center' }}>
-              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>IQ Coins</div>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>Coins</div>
               <div style={{ fontFamily: 'var(--font-mono)', fontSize: '22px', fontWeight: 700, color: 'var(--gold)' }}>{(user?.iqCoins || 0).toLocaleString()}</div>
             </div>
             <div style={{ background: 'var(--bg-surface-2)', borderRadius: 'var(--radius-md)', padding: '12px', textAlign: 'center' }}>
@@ -163,22 +156,6 @@ export default function Profile() {
         {/* Settings */}
         <motion.div className="card" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '16px' }}>⚙️ Settings</h3>
-
-          {/* Gemini API Key */}
-          <div style={{ marginBottom: '20px' }}>
-            <label className="form-label">Gemini API Key (Optional)</label>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <input type="password" className="form-input" value={apiKey}
-                onChange={e => setApiKey(e.target.value)}
-                placeholder="Enter your Gemini API key..."
-                style={{ flex: 1 }} />
-              <button className="btn btn-primary btn-sm" onClick={saveApiKey}>Save</button>
-            </div>
-            <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '6px' }}>
-              Free at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer"
-                style={{ color: 'var(--accent-purple-light)' }}>aistudio.google.com</a> · Enables real AI narration
-            </p>
-          </div>
 
           {/* Actions */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -214,7 +191,7 @@ export default function Profile() {
             <div style={{ position: 'relative', zIndex: 1 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
                 <div>
-                  <div style={{ fontSize: '20px', fontWeight: 700 }}>InvestIQ Confidence Card</div>
+                  <div style={{ fontSize: '20px', fontWeight: 700 }}>SimVesto Confidence Card</div>
                   <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{user?.name}</div>
                 </div>
                 <div style={{
@@ -222,7 +199,7 @@ export default function Profile() {
                   background: 'linear-gradient(135deg, var(--accent-purple), #a855f7)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: '18px', fontWeight: 800, color: 'white',
-                }}>IQ</div>
+                }}>SV</div>
               </div>
 
               <div style={{ display: 'flex', gap: '32px', marginBottom: '24px' }}>
@@ -249,7 +226,7 @@ export default function Profile() {
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: '20px', fontWeight: 700, color: 'var(--gold)' }}>
                       {(user?.iqCoins || 0).toLocaleString()}
                     </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>IQ Coins</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Coins</div>
                   </div>
                 </div>
               </div>
@@ -266,7 +243,7 @@ export default function Profile() {
           <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
             <button className="btn btn-primary btn-sm" onClick={exportCard}>📸 Export as PNG</button>
             <button className="btn btn-outline btn-sm" onClick={() => {
-              navigator.clipboard?.writeText('Check out my InvestIQ Confidence Card! 🏆📈');
+              navigator.clipboard?.writeText('Check out my SimVesto Confidence Card! 🏆📈');
             }}>📋 Copy Share Text</button>
           </div>
         </motion.div>

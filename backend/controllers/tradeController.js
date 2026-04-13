@@ -3,20 +3,19 @@ import Portfolio from '../models/Portfolio.js';
 import Transaction from '../models/Transaction.js';
 import Stock from '../models/Stock.js';
 import { fetchLiveByFrontendSymbol } from './stockController.js';
+import { recordCoinLedgerEntry } from '../utils/coinLedger.js';
 
 const round2 = (value) => Number(Number(value).toFixed(2));
-const roundQty = (value) => Number(Number(value).toFixed(4));
+const roundQty = (value) => Math.floor(Number(value || 0));
 const QTY_EPSILON = 0.0001;
 const TEMP_TEST_BALANCE = 100000;
 
 const parseQuantity = (value) => {
   const qty = Number(value);
-  if (!Number.isFinite(qty) || qty <= 0) {
+  if (!Number.isInteger(qty) || qty <= 0) {
     return null;
   }
-  const normalizedQty = roundQty(qty);
-  if (normalizedQty < QTY_EPSILON) return null;
-  return normalizedQty;
+  return qty;
 };
 
 const parseTradePrice = (value) => {
@@ -88,6 +87,8 @@ export const buyStock = async (req, res) => {
       return res.status(400).json({ message: 'Insufficient funds' });
     }
 
+    const walletBefore = wallet.balance;
+
     // Deduct from wallet
     wallet.balance = round2(wallet.balance - totalCost);
     await wallet.save();
@@ -123,6 +124,19 @@ export const buyStock = async (req, res) => {
       balanceAfter: wallet.balance,
       quantityAfter,
       avgBuyPriceAfter,
+    });
+
+    await recordCoinLedgerEntry({
+      userId: req.user._id,
+      sourceType: 'TRADE',
+      sourceId: `BUY:${normalizedSymbol}:${Date.now()}`,
+      label: `Bought ${normalizedSymbol}`,
+      amount: -totalCost,
+      balanceBefore: walletBefore,
+      balanceAfter: wallet.balance,
+      referenceType: 'TRANSACTION',
+      referenceId: normalizedSymbol,
+      note: `Purchased ${qty} share${qty === 1 ? '' : 's'} of ${normalizedSymbol}`,
     });
 
     res.json({
@@ -177,6 +191,7 @@ export const sellStock = async (req, res) => {
 
     // Add to wallet
     const wallet = await getOrCreateWallet(req.user._id);
+    const walletBefore = wallet.balance;
     wallet.balance = round2(wallet.balance + totalRevenue);
     await wallet.save();
 
@@ -192,6 +207,19 @@ export const sellStock = async (req, res) => {
       quantityAfter,
       avgBuyPriceAfter: quantityAfter > 0 ? avgBuyPrice : 0,
       realizedPnl,
+    });
+
+    await recordCoinLedgerEntry({
+      userId: req.user._id,
+      sourceType: 'TRADE',
+      sourceId: `SELL:${normalizedSymbol}:${Date.now()}`,
+      label: `Sold ${normalizedSymbol}`,
+      amount: totalRevenue,
+      balanceBefore: walletBefore,
+      balanceAfter: wallet.balance,
+      referenceType: 'TRANSACTION',
+      referenceId: normalizedSymbol,
+      note: `Sold ${qty} share${qty === 1 ? '' : 's'} of ${normalizedSymbol}`,
     });
 
     res.json({

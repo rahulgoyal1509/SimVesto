@@ -7,13 +7,207 @@ import { runMonteCarlo, getSuggestionColor, getSuggestionEmoji } from '../engine
 import { generateNarration } from '../engine/aiNarrator';
 
 const TIMEFRAMES = ['1D', '1W', '1M', '3M', '1Y'];
-const QTY_STEP = 0.01;
+const QTY_STEP = 1;
 
 const normalizeQty = (value) => {
   const n = Number(value);
   if (!Number.isFinite(n)) return QTY_STEP;
-  return Math.max(QTY_STEP, Number(n.toFixed(4)));
+  return Math.max(QTY_STEP, Math.floor(n));
 };
+
+const formatMoney = (value) => `₹${Number(value || 0).toLocaleString()}`;
+
+const buildChartSlices = (stock, timeframe) => {
+  if (!stock) return [];
+  const history = stock.priceHistory || [];
+  let sliceCount;
+  switch (timeframe) {
+    case '1D': sliceCount = 24; break;
+    case '1W': sliceCount = 168; break;
+    case '1M': sliceCount = Math.min(history.length, 720); break;
+    case '3M': sliceCount = history.length; break;
+    case '1Y': sliceCount = history.length; break;
+    default: sliceCount = 24;
+  }
+
+  return history.slice(-sliceCount).map((point, index, slice) => {
+    const previous = slice[index - 1]?.price ?? point.price;
+    return {
+      idx: index,
+      time: new Date(point.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      open: previous,
+      close: point.price,
+      high: point.high,
+      low: point.low,
+      price: point.price,
+      volume: point.volume,
+      change: point.price - previous,
+      changePct: previous ? ((point.price - previous) / previous) * 100 : 0,
+    };
+  });
+};
+
+function CandleChart({ data, holding, isUp }) {
+  const width = 900;
+  const height = 320;
+  const padding = { top: 18, right: 24, bottom: 34, left: 72 };
+  const plotWidth = width - padding.left - padding.right;
+  const plotHeight = height - padding.top - padding.bottom;
+  const prices = data.flatMap(point => [point.high, point.low, point.open, point.close]);
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  const range = Math.max(max - min, 1);
+  const barWidth = Math.max(5, plotWidth / Math.max(data.length * 1.6, 1));
+
+  const scaleY = (value) => padding.top + ((max - value) / range) * plotHeight;
+  const scaleX = (index) => padding.left + ((index + 0.5) / Math.max(data.length, 1)) * plotWidth;
+
+  return (
+    <div style={{ width: '100%', height, position: 'relative' }}>
+      <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="100%" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="candleUp" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#10b981" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#10b981" stopOpacity="0.35" />
+          </linearGradient>
+          <linearGradient id="candleDown" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#ef4444" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#ef4444" stopOpacity="0.35" />
+          </linearGradient>
+          <linearGradient id="candleBg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={isUp ? '#10b981' : '#ef4444'} stopOpacity="0.12" />
+            <stop offset="100%" stopColor={isUp ? '#10b981' : '#ef4444'} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+
+        <rect x={padding.left} y={padding.top} width={plotWidth} height={plotHeight} fill="url(#candleBg)" rx="12" />
+
+        {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
+          const y = padding.top + ratio * plotHeight;
+          return <line key={ratio} x1={padding.left} x2={padding.left + plotWidth} y1={y} y2={y} stroke="rgba(255,255,255,0.06)" strokeWidth="1" />;
+        })}
+
+        {data.map((point, index) => {
+          const x = scaleX(index);
+          const highY = scaleY(point.high);
+          const lowY = scaleY(point.low);
+          const openY = scaleY(point.open);
+          const closeY = scaleY(point.close);
+          const isGreen = point.close >= point.open;
+          const bodyTop = Math.min(openY, closeY);
+          const bodyHeight = Math.max(Math.abs(closeY - openY), 2);
+
+          return (
+            <g key={`${point.time}-${index}`}>
+              <line x1={x} x2={x} y1={highY} y2={lowY} stroke={isGreen ? '#10b981' : '#ef4444'} strokeWidth="1.4" opacity="0.9" />
+              <rect
+                x={x - barWidth / 2}
+                y={bodyTop}
+                width={barWidth}
+                height={bodyHeight}
+                rx="2"
+                fill={isGreen ? 'url(#candleUp)' : 'url(#candleDown)'}
+                stroke={isGreen ? '#10b981' : '#ef4444'}
+                strokeWidth="1"
+              />
+            </g>
+          );
+        })}
+
+        {holding && (
+          <line
+            x1={padding.left}
+            x2={padding.left + plotWidth}
+            y1={scaleY(holding.avgBuyPrice)}
+            y2={scaleY(holding.avgBuyPrice)}
+            stroke="#a855f7"
+            strokeDasharray="5 5"
+            strokeWidth="1.5"
+          />
+        )}
+      </svg>
+      <div style={{ position: 'absolute', inset: 'auto 12px 10px 12px', display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)' }}>
+        <span>{data[0]?.time}</span>
+        <span>{data[data.length - 1]?.time}</span>
+      </div>
+    </div>
+  );
+}
+
+function WaterfallChart({ data, holding, isUp }) {
+  const width = 900;
+  const height = 320;
+  const padding = { top: 18, right: 24, bottom: 34, left: 72 };
+  const plotWidth = width - padding.left - padding.right;
+  const plotHeight = height - padding.top - padding.bottom;
+  const values = data.map(point => point.change);
+  const maxAbs = Math.max(...values.map(v => Math.abs(v)), 1);
+  const scaleX = (index) => padding.left + ((index + 0.5) / Math.max(data.length, 1)) * plotWidth;
+  const scaleY = (value) => padding.top + ((maxAbs - value) / (maxAbs * 2)) * plotHeight;
+  const baseline = scaleY(0);
+  const barWidth = Math.max(5, plotWidth / Math.max(data.length * 1.8, 1));
+
+  return (
+    <div style={{ width: '100%', height, position: 'relative' }}>
+      <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="100%" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="waterfallGain" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#10b981" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#10b981" stopOpacity="0.35" />
+          </linearGradient>
+          <linearGradient id="waterfallLoss" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#ef4444" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#ef4444" stopOpacity="0.35" />
+          </linearGradient>
+        </defs>
+
+        {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
+          const y = padding.top + ratio * plotHeight;
+          return <line key={ratio} x1={padding.left} x2={padding.left + plotWidth} y1={y} y2={y} stroke="rgba(255,255,255,0.06)" strokeWidth="1" />;
+        })}
+
+        <line x1={padding.left} x2={padding.left + plotWidth} y1={baseline} y2={baseline} stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" />
+
+        {data.map((point, index) => {
+          const x = scaleX(index);
+          const magnitude = Math.max(Math.abs(point.change), 1);
+          const barHeight = Math.max((magnitude / (maxAbs || 1)) * (plotHeight / 2), 3);
+          const y = point.change >= 0 ? baseline - barHeight : baseline;
+          return (
+            <g key={`${point.time}-${index}`}>
+              <rect
+                x={x - barWidth / 2}
+                y={y}
+                width={barWidth}
+                height={barHeight}
+                rx="3"
+                fill={point.change >= 0 ? 'url(#waterfallGain)' : 'url(#waterfallLoss)'}
+                stroke={point.change >= 0 ? '#10b981' : '#ef4444'}
+                strokeWidth="1"
+              />
+            </g>
+          );
+        })}
+
+        {holding && (
+          <line
+            x1={padding.left}
+            x2={padding.left + plotWidth}
+            y1={baseline}
+            y2={baseline}
+            stroke="#a855f7"
+            strokeDasharray="5 5"
+            strokeWidth="1.5"
+          />
+        )}
+      </svg>
+      <div style={{ position: 'absolute', inset: 'auto 12px 10px 12px', display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)' }}>
+        <span>{data[0]?.time}</span>
+        <span>{data[data.length - 1]?.time}</span>
+      </div>
+    </div>
+  );
+}
 
 export default function Trade() {
   const { symbol } = useParams();
@@ -46,32 +240,14 @@ export default function Trade() {
   const [aiText, setAiText] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
 
-  const chartData = useMemo(() => {
-    if (!stock) return [];
-    const h = stock.priceHistory;
-    let sliceCount;
-    switch (timeframe) {
-      case '1D': sliceCount = 24; break;
-      case '1W': sliceCount = 168; break;
-      case '1M': sliceCount = Math.min(h.length, 720); break;
-      case '3M': sliceCount = h.length; break;
-      case '1Y': sliceCount = h.length; break;
-      default: sliceCount = 24;
-    }
-    return h.slice(-sliceCount).map((point, i) => ({
-      idx: i,
-      price: point.price,
-      time: new Date(point.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      high: point.high,
-      low: point.low,
-      volume: point.volume,
-    }));
-  }, [stock, timeframe]);
+  const chartData = useMemo(() => buildChartSlices(stock, timeframe), [stock, timeframe]);
 
   const isUp = stock?.dayChangePct >= 0;
   const totalCost = stock ? parseFloat((stock.currentPrice * quantity).toFixed(2)) : 0;
-  const canBuy = totalCost <= (user?.iqCoins || 0);
-  const canSell = holding && quantity <= holding.quantity;
+  const maxBuyQuantity = stock ? Math.floor((user?.iqCoins || 0) / stock.currentPrice) : 0;
+  const maxSellQuantity = holding?.quantity || 0;
+  const canBuy = quantity <= maxBuyQuantity && totalCost <= (user?.iqCoins || 0);
+  const canSell = Boolean(holding && quantity <= holding.quantity);
 
   // Run Monte Carlo on demand
   const runMC = useCallback(() => {
@@ -137,6 +313,10 @@ export default function Trade() {
     setShowOrderModal(true);
     setQuantity(1);
   };
+
+  useEffect(() => {
+    setQuantity(1);
+  }, [symbol]);
 
   if (!stock) {
     return (
@@ -204,43 +384,53 @@ export default function Trade() {
                   style={{ fontSize: '11px', color: chartType === 'area' ? 'var(--accent-purple-light)' : 'var(--text-muted)' }}>Area</button>
                 <button className="btn btn-sm btn-ghost" onClick={() => setChartType('line')}
                   style={{ fontSize: '11px', color: chartType === 'line' ? 'var(--accent-purple-light)' : 'var(--text-muted)' }}>Line</button>
+                <button className="btn btn-sm btn-ghost" onClick={() => setChartType('candle')}
+                  style={{ fontSize: '11px', color: chartType === 'candle' ? 'var(--accent-purple-light)' : 'var(--text-muted)' }}>Candles</button>
+                <button className="btn btn-sm btn-ghost" onClick={() => setChartType('waterfall')}
+                  style={{ fontSize: '11px', color: chartType === 'waterfall' ? 'var(--accent-purple-light)' : 'var(--text-muted)' }}>Waterfall</button>
               </div>
             </div>
 
-            <ResponsiveContainer width="100%" height={320}>
-              {chartType === 'area' ? (
-                <AreaChart data={chartData}>
-                  <defs>
-                    <linearGradient id="stockGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={isUp ? '#10b981' : '#ef4444'} stopOpacity={0.25} />
-                      <stop offset="100%" stopColor={isUp ? '#10b981' : '#ef4444'} stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="time" tick={{ fontSize: 10, fill: '#5a5a72' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-                  <YAxis domain={['auto', 'auto']} tick={{ fontSize: 10, fill: '#5a5a72' }} axisLine={false} tickLine={false} width={60}
-                    tickFormatter={v => `₹${v.toLocaleString()}`} />
-                  <Tooltip
-                    contentStyle={{ background: '#111118', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', fontSize: '12px', fontFamily: 'JetBrains Mono' }}
-                    formatter={(v) => [`₹${v.toLocaleString()}`, 'Price']}
-                  />
-                  {holding && <ReferenceLine y={holding.avgBuyPrice} stroke="#7c3aed" strokeDasharray="4 4" label={{ value: `Avg: ₹${holding.avgBuyPrice}`, position: 'right', fill: '#7c3aed', fontSize: 10 }} />}
-                  <Area type="monotone" dataKey="price" stroke={isUp ? '#10b981' : '#ef4444'}
-                    fill="url(#stockGrad)" strokeWidth={2} dot={false} animationDuration={800} />
-                </AreaChart>
-              ) : (
-                <LineChart data={chartData}>
-                  <XAxis dataKey="time" tick={{ fontSize: 10, fill: '#5a5a72' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-                  <YAxis domain={['auto', 'auto']} tick={{ fontSize: 10, fill: '#5a5a72' }} axisLine={false} tickLine={false} width={60}
-                    tickFormatter={v => `₹${v.toLocaleString()}`} />
-                  <Tooltip
-                    contentStyle={{ background: '#111118', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', fontSize: '12px', fontFamily: 'JetBrains Mono' }}
-                    formatter={(v) => [`₹${v.toLocaleString()}`, 'Price']}
-                  />
-                  <Line type="monotone" dataKey="price" stroke={isUp ? '#10b981' : '#ef4444'}
-                    strokeWidth={2} dot={false} animationDuration={800} />
-                </LineChart>
-              )}
-            </ResponsiveContainer>
+            {chartType === 'candle' ? (
+              <CandleChart data={chartData} holding={holding} isUp={isUp} />
+            ) : chartType === 'waterfall' ? (
+              <WaterfallChart data={chartData} holding={holding} isUp={isUp} />
+            ) : (
+              <ResponsiveContainer width="100%" height={320}>
+                {chartType === 'area' ? (
+                  <AreaChart data={chartData}>
+                    <defs>
+                      <linearGradient id="stockGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={isUp ? '#10b981' : '#ef4444'} stopOpacity={0.25} />
+                        <stop offset="100%" stopColor={isUp ? '#10b981' : '#ef4444'} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="time" tick={{ fontSize: 10, fill: '#5a5a72' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+                    <YAxis domain={['auto', 'auto']} tick={{ fontSize: 10, fill: '#5a5a72' }} axisLine={false} tickLine={false} width={60}
+                      tickFormatter={v => `₹${v.toLocaleString()}`} />
+                    <Tooltip
+                      contentStyle={{ background: '#111118', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', fontSize: '12px', fontFamily: 'JetBrains Mono' }}
+                      formatter={(v) => [`₹${v.toLocaleString()}`, 'Price']}
+                    />
+                    {holding && <ReferenceLine y={holding.avgBuyPrice} stroke="#7c3aed" strokeDasharray="4 4" label={{ value: `Avg: ₹${holding.avgBuyPrice}`, position: 'right', fill: '#7c3aed', fontSize: 10 }} />}
+                    <Area type="monotone" dataKey="price" stroke={isUp ? '#10b981' : '#ef4444'}
+                      fill="url(#stockGrad)" strokeWidth={2} dot={false} animationDuration={800} />
+                  </AreaChart>
+                ) : (
+                  <LineChart data={chartData}>
+                    <XAxis dataKey="time" tick={{ fontSize: 10, fill: '#5a5a72' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+                    <YAxis domain={['auto', 'auto']} tick={{ fontSize: 10, fill: '#5a5a72' }} axisLine={false} tickLine={false} width={60}
+                      tickFormatter={v => `₹${v.toLocaleString()}`} />
+                    <Tooltip
+                      contentStyle={{ background: '#111118', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', fontSize: '12px', fontFamily: 'JetBrains Mono' }}
+                      formatter={(v) => [`₹${v.toLocaleString()}`, 'Price']}
+                    />
+                    <Line type="monotone" dataKey="price" stroke={isUp ? '#10b981' : '#ef4444'}
+                      strokeWidth={2} dot={false} animationDuration={800} />
+                  </LineChart>
+                )}
+              </ResponsiveContainer>
+            )}
 
             {/* Stock stats */}
             <div className="grid-4" style={{ marginTop: '16px', gap: '12px' }}>
@@ -361,10 +551,31 @@ export default function Trade() {
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <button className="btn btn-ghost btn-icon" onClick={() => setQuantity(normalizeQty(quantity - QTY_STEP))}
                   style={{ border: '1px solid var(--border-default)', fontSize: '18px' }}>−</button>
-                <input type="number" min={QTY_STEP} step={QTY_STEP} value={quantity} onChange={e => setQuantity(normalizeQty(parseFloat(e.target.value) || QTY_STEP))}
+                <input type="number" min={QTY_STEP} step={QTY_STEP} value={quantity} onChange={e => setQuantity(normalizeQty(parseInt(e.target.value, 10) || QTY_STEP))}
                   style={{ textAlign: 'center', fontFamily: 'var(--font-mono)', fontSize: '18px', fontWeight: 700, flex: 1 }} />
                 <button className="btn btn-ghost btn-icon" onClick={() => setQuantity(normalizeQty(quantity + QTY_STEP))}
                   style={{ border: '1px solid var(--border-default)', fontSize: '18px' }}>+</button>
+              </div>
+              <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
+                {tab === 'BUY' ? (
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => setQuantity(normalizeQty(maxBuyQuantity || 1))}
+                    disabled={!maxBuyQuantity}
+                    style={{ flex: 1, fontSize: '11px', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-sm)' }}
+                  >
+                    MAX
+                  </button>
+                ) : (
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => setQuantity(normalizeQty(maxSellQuantity || 1))}
+                    disabled={!maxSellQuantity}
+                    style={{ flex: 1, fontSize: '11px', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-sm)' }}
+                  >
+                    MAX
+                  </button>
+                )}
               </div>
               {tab === 'BUY' && (
                 <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
@@ -392,7 +603,13 @@ export default function Trade() {
               {tab === 'BUY' && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>
                   <span>Available</span>
-                  <span style={{ fontFamily: 'var(--font-mono)' }}>₹{(user?.iqCoins || 0).toLocaleString()} IQ</span>
+                  <span style={{ fontFamily: 'var(--font-mono)' }}>₹{(user?.iqCoins || 0).toLocaleString()} Coins</span>
+                </div>
+              )}
+              {tab === 'BUY' && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', fontSize: '11px', color: 'var(--text-muted)' }}>
+                  <span>Max buy</span>
+                  <span style={{ fontFamily: 'var(--font-mono)' }}>{maxBuyQuantity} shares</span>
                 </div>
               )}
               {tab === 'SELL' && holding && (
@@ -413,7 +630,7 @@ export default function Trade() {
 
             {tab === 'BUY' && !canBuy && (
               <div style={{ textAlign: 'center', fontSize: '11px', color: 'var(--red)', marginTop: '8px' }}>
-                Insufficient IQ Coins
+                Insufficient Coins
               </div>
             )}
 

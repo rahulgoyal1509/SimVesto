@@ -1,33 +1,33 @@
 /* ═══════════════════════════════════════════════════════════════
-   InvestIQ — Design System
-   Premium Dark Trading Platform
-   ═══════════════════════════════════════════════════════════════ */
+  SimVesto — Design System
+  Premium Dark Trading Platform
+  ═══════════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 :root {
-  --bg-primary: #06060a;
-  --bg-secondary: #0c0c12;
-  --bg-surface: #111118;
-  --bg-surface-2: #16161f;
-  --bg-surface-3: #1c1c28;
-  --bg-surface-hover: #1f1f2e;
-  --bg-elevated: #222233;
+  --bg-primary: #07152a;
+  --bg-secondary: #0b1e39;
+  --bg-surface: #11284a;
+  --bg-surface-2: #15335d;
+  --bg-surface-3: #1a3f72;
+  --bg-surface-hover: #1f4a85;
+  --bg-elevated: #245595;
 
-  --border-subtle: rgba(255, 255, 255, 0.04);
-  --border-default: rgba(255, 255, 255, 0.07);
-  --border-strong: rgba(255, 255, 255, 0.12);
-  --border-accent: rgba(124, 58, 237, 0.3);
+  --border-subtle: rgba(209, 241, 255, 0.12);
+  --border-default: rgba(209, 241, 255, 0.2);
+  --border-strong: rgba(209, 241, 255, 0.33);
+  --border-accent: rgba(25, 76, 152, 0.5);
 
-  --text-primary: #f0f0f5;
-  --text-secondary: #a0a0b8;
-  --text-muted: #5a5a72;
-  --text-inverse: #06060a;
+  --text-primary: #f3f9ff;
+  --text-secondary: #b8d6f2;
+  --text-muted: #81a6cb;
+  --text-inverse: #07152a;
 
-  --accent-purple: #7c3aed;
-  --accent-purple-light: #a78bfa;
-  --accent-purple-dim: rgba(124, 58, 237, 0.15);
-  --accent-purple-glow: rgba(124, 58, 237, 0.4);
+  --accent-purple: #194c98;
+  --accent-purple-light: #d1f1ff;
+  --accent-purple-dim: rgba(25, 76, 152, 0.24);
+  --accent-purple-glow: rgba(25, 76, 152, 0.5);
 
   --green: #10b981;
   --green-light: #34d399;
@@ -41,15 +41,15 @@
   --amber: #f59e0b;
   --amber-dim: rgba(245, 158, 11, 0.12);
 
-  --blue: #3b82f6;
-  --blue-dim: rgba(59, 130, 246, 0.12);
+  --blue: #3d7dca;
+  --blue-dim: rgba(61, 125, 202, 0.16);
 
   --gold: #fbbf24;
   --gold-dim: rgba(251, 191, 36, 0.12);
 
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-  --font-serif: 'Instrument Serif', Georgia, serif;
+  --font-body: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Fira Code', monospace;
+  --font-serif: 'Space Grotesk', 'Manrope', sans-serif;
 
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -60,7 +60,7 @@
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
-  --shadow-glow-purple: 0 0 30px rgba(124, 58, 237, 0.15);
+  --shadow-glow-purple: 0 0 30px rgba(25, 76, 152, 0.28);
   --shadow-glow-green: 0 0 20px rgba(16, 185, 129, 0.15);
 
   --transition-fast: 0.15s ease;
@@ -403,6 +403,68 @@ h6 {
 .badge-amber {
   background: var(--amber-dim);
   color: var(--amber);
+}
+
+.coin-history-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.coin-history-chip {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  padding: 16px 18px;
+  min-height: 88px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.coin-history-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  padding: 20px;
+}
+
+.coin-history-list {
+  display: grid;
+  gap: 16px;
+}
+
+.coin-history-meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.coin-history-date {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.coin-history-stats {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.coin-history-amount.positive {
+  color: var(--green);
+  font-weight: 700;
+}
+
+.coin-history-amount.negative {
+  color: var(--red);
+  font-weight: 700;
 }
 
 /* ── NAVIGATION BAR (App) ── */

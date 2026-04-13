@@ -32,6 +32,14 @@ export const api = {
     const res = await fetch(`${BASE_URL}/wallet`, { headers: getAuthHeaders() });
     return res.json();
   },
+  rewardCoins: async (payload) => {
+    const res = await fetch(`${BASE_URL}/wallet/reward`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
+    return res.json();
+  },
 
   // Portfolio
   getPortfolio: async () => {
@@ -53,6 +61,12 @@ export const api = {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ symbol, quantity, price })
+    });
+    return res.json();
+  },
+  getTradeHistory: async (limit = 100) => {
+    const res = await fetch(`${BASE_URL}/trade/history?limit=${limit}`, {
+      headers: getAuthHeaders(),
     });
     return res.json();
   },

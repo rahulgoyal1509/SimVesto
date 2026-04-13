@@ -6,11 +6,14 @@ import { initializeStocks, tickPrice } from '../engine/stockEngine';
 import { computeFearScore } from '../engine/fearEngine';
 
 const INITIAL_COINS = 100000;
+const round2 = (v) => parseFloat(Number(v || 0).toFixed(2));
+const STORAGE_PREFIX = 'simvesto_';
+const LEGACY_STORAGE_PREFIX = 'investiq_';
 
 // Load state from localStorage
 function loadState(key, defaultValue) {
   try {
-    const saved = localStorage.getItem(`investiq_${key}`);
+    const saved = localStorage.getItem(`${STORAGE_PREFIX}${key}`) ?? localStorage.getItem(`${LEGACY_STORAGE_PREFIX}${key}`);
     return saved ? JSON.parse(saved) : defaultValue;
   } catch {
     return defaultValue;
@@ -19,7 +22,7 @@ function loadState(key, defaultValue) {
 
 function saveState(key, value) {
   try {
-    localStorage.setItem(`investiq_${key}`, JSON.stringify(value));
+    localStorage.setItem(`${STORAGE_PREFIX}${key}`, JSON.stringify(value));
   } catch (e) {
     console.warn('localStorage save failed:', e);
   }
@@ -27,7 +30,7 @@ function saveState(key, value) {
 
 function getUserStorageKey(user, key) {
   const identity = user?._id || user?.email || 'guest';
-  return `investiq_${identity}_${key}`;
+  return `${STORAGE_PREFIX}${identity}_${key}`;
 }
 
 function loadUserState(user, key, defaultValue) {
@@ -57,6 +60,19 @@ const useStore = create((set, get) => ({
   geminiApiKey: loadState('geminiApiKey', ''),
 
   setUser: (user) => {
+    const loadedCoinHistory = loadUserState(user, 'coinHistory', []);
+    const coinHistory = loadedCoinHistory.length > 0 ? loadedCoinHistory : [{
+      id: `start-${Date.now()}`,
+      type: 'SYSTEM',
+      subtype: 'START',
+      amount: INITIAL_COINS,
+      source: 'Starting Balance',
+      label: 'Initial coin grant',
+      note: 'You began this simulation with 100,000 coins.',
+      timestamp: Date.now(),
+      balanceAfter: INITIAL_COINS,
+    }];
+
     set({
       user,
       isAuthenticated: true,
@@ -67,10 +83,15 @@ const useStore = create((set, get) => ({
       milestones: loadUserState(user, 'milestones', []),
       simulations: loadUserState(user, 'simulations', []),
       portfolioHistory: loadUserState(user, 'portfolioHistory', []),
+      tradeHistory: loadUserState(user, 'tradeHistory', []),
+      coinHistory,
       fearModalData: null,
     });
     saveState('user', user);
     saveState('isAuthenticated', true);
+    if (loadedCoinHistory.length === 0) {
+      saveUserState(user, 'coinHistory', coinHistory);
+    }
   },
 
   updateUser: (updates) => {
@@ -82,6 +103,25 @@ const useStore = create((set, get) => ({
   setGeminiApiKey: (key) => {
     set({ geminiApiKey: key });
     saveState('geminiApiKey', key);
+  },
+
+  addCoinHistoryEvent: (event) => {
+    const normalized = {
+      id: event.id || `${event.type}-${event.source || 'coin'}-${Date.now()}`,
+      timestamp: event.timestamp || Date.now(),
+      type: event.type || 'SYSTEM',
+      subtype: event.subtype || 'GENERAL',
+      amount: Number(event.amount || 0),
+      source: event.source || 'System',
+      label: event.label || 'Coin event',
+      note: event.note || '',
+      balanceAfter: event.balanceAfter,
+      reference: event.reference || null,
+    };
+    const history = [normalized, ...get().coinHistory].slice(0, 200);
+    set({ coinHistory: history });
+    saveUserState(get().user, 'coinHistory', history);
+    return normalized;
   },
 
   logout: () => {
@@ -96,6 +136,7 @@ const useStore = create((set, get) => ({
       milestones: [],
       simulations: [],
       portfolioHistory: [],
+      tradeHistory: [],
     });
     saveState('user', null);
     saveState('isAuthenticated', false);
@@ -238,15 +279,30 @@ const useStore = create((set, get) => ({
       const order = {
         id: Date.now(), stockId, symbol: stock.symbol, name: stock.name,
         type: 'BUY', quantity: executedQty, price: executedPrice, totalCost,
+        balanceAfter: newCoins,
+        pnl: 0,
         timestamp: Date.now(), status: 'COMPLETED',
       };
 
       const newOrders = [order, ...get().orders];
+      const newTradeHistory = [order, ...get().tradeHistory];
 
-      set({ holdings: newHoldings, orders: newOrders });
+      set({ holdings: newHoldings, orders: newOrders, tradeHistory: newTradeHistory });
       get().updateUser({ iqCoins: newCoins, totalTrades: (user.totalTrades || 0) + 1 });
+      get().addCoinHistoryEvent({
+        type: 'TRADE',
+        subtype: 'BUY',
+        amount: -totalCost,
+        source: stock.symbol,
+        label: `Bought ${executedQty} ${stock.symbol}`,
+        note: `Spent ₹${totalCost.toLocaleString()} to acquire shares`,
+        balanceAfter: newCoins,
+        reference: order.id,
+      });
       saveUserState(get().user, 'holdings', newHoldings);
       saveUserState(get().user, 'orders', newOrders);
+      saveUserState(get().user, 'tradeHistory', newTradeHistory);
+      get().recordPortfolioSnapshot();
       get().checkMilestones();
 
       return { success: true, order };
@@ -297,20 +353,34 @@ const useStore = create((set, get) => ({
       const order = {
         id: Date.now(), stockId, symbol: stock.symbol, name: stock.name,
         type: 'SELL', quantity: executedQty, price: executedPrice, totalCost: saleValue,
+        balanceAfter: newCoins,
         pnl: tradePnL, timestamp: Date.now(), status: 'COMPLETED',
       };
 
       const newOrders = [order, ...get().orders];
+      const newTradeHistory = [order, ...get().tradeHistory];
 
-      set({ holdings: newHoldings, orders: newOrders });
+      set({ holdings: newHoldings, orders: newOrders, tradeHistory: newTradeHistory });
       get().updateUser({
         iqCoins: newCoins,
         totalTrades: (user.totalTrades || 0) + 1,
         totalPnL: (user.totalPnL || 0) + tradePnL,
       });
+      get().addCoinHistoryEvent({
+        type: 'TRADE',
+        subtype: 'SELL',
+        amount: saleValue,
+        source: stock.symbol,
+        label: `Sold ${executedQty} ${stock.symbol}`,
+        note: `Received ₹${saleValue.toLocaleString()} from sale`,
+        balanceAfter: newCoins,
+        reference: order.id,
+      });
 
       saveUserState(get().user, 'holdings', newHoldings);
       saveUserState(get().user, 'orders', newOrders);
+      saveUserState(get().user, 'tradeHistory', newTradeHistory);
+      get().recordPortfolioSnapshot();
       get().checkMilestones();
 
       return { success: true, order, pnl: tradePnL };
@@ -321,6 +391,41 @@ const useStore = create((set, get) => ({
 
   // ── ORDERS ──
   orders: loadUserState(initialUser, 'orders', []),
+  tradeHistory: loadUserState(initialUser, 'tradeHistory', []),
+  coinHistory: loadUserState(initialUser, 'coinHistory', []),
+
+  fetchTradeHistory: async (limit = 100) => {
+    const { user } = get();
+    if (!user) return [];
+
+    try {
+      const { api } = await import('../services/api.js');
+      const response = await api.getTradeHistory(limit);
+      const transactions = Array.isArray(response?.transactions) ? response.transactions : [];
+      const mapped = transactions.map((tx) => ({
+        id: tx._id || `${tx.type}-${tx.timestamp}`,
+        symbol: tx.symbol,
+        name: tx.symbol,
+        type: tx.type,
+        quantity: Number(tx.quantity || 0),
+        price: Number(tx.price || 0),
+        totalCost: Number(tx.totalAmount || 0),
+        pnl: tx.type === 'SELL' ? Number(tx.realizedPnl || 0) : 0,
+        realizedPnl: Number(tx.realizedPnl || 0),
+        balanceAfter: Number(tx.balanceAfter || 0),
+        timestamp: tx.timestamp,
+        status: 'COMPLETED',
+      }));
+
+      set({ orders: mapped, tradeHistory: mapped });
+      saveUserState(get().user, 'orders', mapped);
+      saveUserState(get().user, 'tradeHistory', mapped);
+      return mapped;
+    } catch (error) {
+      console.warn('Failed to fetch backend trade history', error);
+      return get().orders;
+    }
+  },
 
   // ── FEAR SCORE ──
   fearScore: loadUserState(initialUser, 'fearScore', DEFAULT_FEAR_SCORE),
@@ -373,6 +478,7 @@ const useStore = create((set, get) => ({
     const { user, orders, milestones, holdings } = get();
     if (!user) return;
     const newMilestones = [...milestones];
+    const unlockedRewards = [];
 
     const checks = [
       { id: 'first_trade', label: 'First Trade', condition: orders.length >= 1, reward: 200 },
@@ -386,12 +492,45 @@ const useStore = create((set, get) => ({
     checks.forEach(m => {
       if (!newMilestones.find(nm => nm.id === m.id) && m.condition) {
         newMilestones.push({ ...m, unlockedAt: Date.now() });
+        unlockedRewards.push(m);
       }
     });
 
     if (newMilestones.length !== milestones.length) {
       set({ milestones: newMilestones });
       saveUserState(get().user, 'milestones', newMilestones);
+    }
+
+    if (unlockedRewards.length > 0) {
+      void (async () => {
+        try {
+          const { api } = await import('../services/api.js');
+          for (const milestone of unlockedRewards) {
+            const reward = await api.rewardCoins({
+              amount: milestone.reward,
+              sourceId: milestone.id,
+              label: milestone.label,
+              note: `Milestone unlocked: ${milestone.label}`,
+            });
+
+            if (Number.isFinite(Number(reward?.balance))) {
+              get().updateUser({ iqCoins: reward.balance });
+              get().addCoinHistoryEvent({
+                type: 'REWARD',
+                subtype: 'ACHIEVEMENT',
+                amount: milestone.reward,
+                source: milestone.label,
+                label: `Achievement reward: ${milestone.label}`,
+                note: `Verified reward from unlocked milestone`,
+                balanceAfter: reward.balance,
+                reference: milestone.id,
+              });
+            }
+          }
+        } catch (error) {
+          console.warn('Failed to award milestone coins', error);
+        }
+      })();
     }
   },
 
@@ -408,14 +547,24 @@ const useStore = create((set, get) => ({
   portfolioHistory: loadUserState(initialUser, 'portfolioHistory', []),
 
   recordPortfolioSnapshot: () => {
-    const { holdings, user } = get();
+    const { holdings, user, orders } = get();
     if (!user) return;
-    const totalValue = holdings.reduce((s, h) => s + (h.currentValue || 0), 0);
+    const totalValue = round2(holdings.reduce((s, h) => s + (h.currentValue || 0), 0));
+    const investedAmount = round2(holdings.reduce((s, h) => s + ((h.quantity || 0) * (h.avgBuyPrice || 0)), 0));
+    const unrealizedPnl = round2(holdings.reduce((s, h) => s + (h.pnl || 0), 0));
+    const realizedPnl = round2(orders.reduce((s, o) => s + (o.type === 'SELL' ? (o.pnl || o.realizedPnl || 0) : 0), 0));
+    const totalPnl = round2(realizedPnl + unrealizedPnl);
+    const coinBalance = round2(user.iqCoins || 0);
+    const netWorth = round2(totalValue + coinBalance);
     const snapshot = {
       timestamp: Date.now(),
-      totalValue: parseFloat(totalValue.toFixed(2)),
-      coinBalance: user.iqCoins,
-      netWorth: parseFloat((totalValue + user.iqCoins).toFixed(2)),
+      totalValue,
+      investedAmount,
+      coinBalance,
+      realizedPnl,
+      unrealizedPnl,
+      totalPnl,
+      netWorth,
       holdingsCount: holdings.length,
     };
     const history = [...get().portfolioHistory, snapshot].slice(-200);

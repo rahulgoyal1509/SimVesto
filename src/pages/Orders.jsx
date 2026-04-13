@@ -1,10 +1,15 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import useStore from '../store/useStore';
 
 export default function Orders() {
   const orders = useStore(s => s.orders);
+  const fetchTradeHistory = useStore(s => s.fetchTradeHistory);
   const [filter, setFilter] = useState('ALL');
+
+  useEffect(() => {
+    fetchTradeHistory();
+  }, [fetchTradeHistory]);
 
   const filtered = useMemo(() => {
     if (filter === 'ALL') return orders;
@@ -18,8 +23,8 @@ export default function Orders() {
   return (
     <div>
       <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '4px' }}>Order History</h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>{orders.length} total orders</p>
+        <h1 style={{ fontSize: '24px', fontWeight: 700, marginBottom: '4px' }}>Transaction History</h1>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>{orders.length} total transactions</p>
       </motion.div>
 
       {/* Filters */}
@@ -57,6 +62,7 @@ export default function Orders() {
                 <th>Price</th>
                 <th>Total</th>
                 <th>P&L</th>
+                <th>Balance After</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -91,6 +97,7 @@ export default function Orders() {
                       <span style={{ color: 'var(--text-muted)' }}>—</span>
                     )}
                   </td>
+                  <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>₹{(order.balanceAfter || 0).toLocaleString()}</td>
                   <td>
                     <span className="badge badge-green">
                       {order.status}
@@ -102,6 +109,7 @@ export default function Orders() {
           </table>
         </motion.div>
       )}
+
     </div>
   );
 }

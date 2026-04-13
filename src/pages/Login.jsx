@@ -50,8 +50,8 @@ export default function Login() {
             ← Back to home
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '32px' }}>
-            <div className="landing-nav-brand-icon">IQ</div>
-            <span style={{ fontSize: '18px', fontWeight: 700 }}>InvestIQ</span>
+            <div className="landing-nav-brand-icon">SV</div>
+            <span style={{ fontSize: '18px', fontWeight: 700 }}>SimVesto</span>
           </div>
           <h1>Welcome back</h1>
           <p>Log in to continue your trading journey.</p>

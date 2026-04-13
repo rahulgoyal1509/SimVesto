@@ -150,8 +150,8 @@ export default function Signup() {
               ← Back to home
             </Link>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '32px' }}>
-              <div className="landing-nav-brand-icon">IQ</div>
-              <span style={{ fontSize: '18px', fontWeight: 700 }}>InvestIQ</span>
+              <div className="landing-nav-brand-icon">SV</div>
+              <span style={{ fontSize: '18px', fontWeight: 700 }}>SimVesto</span>
             </div>
             <h1>Create your account</h1>
             <p>Start trading in under 60 seconds. No real money needed.</p>
@@ -189,9 +189,9 @@ export default function Signup() {
 
         <div className="auth-right">
           <div style={{ textAlign: 'center', padding: '40px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '24px' }}>🪙</div>
+              <div style={{ fontSize: '64px', marginBottom: '24px' }}>🪙</div>
             <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '28px', fontWeight: 400, marginBottom: '12px' }}>
-              Get <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>10,000 IQ Coins</em>
+              Get <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>100,000 Coins</em>
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '14px', maxWidth: '300px', margin: '0 auto' }}>
               Free tokens to start simulating trades. Earn more through profitable decisions.
