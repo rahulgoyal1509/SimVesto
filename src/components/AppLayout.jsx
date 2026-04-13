@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { path: '/app/holdings', icon: '💼', label: 'Holdings' },
   { path: '/app/orders', icon: '📋', label: 'Orders' },
   { path: '/app/advisor', icon: '🤖', label: 'AI Advisor' },
+  { path: '/app/chat', icon: '💬', label: 'Market Chatbot' },
   { path: '/app/insights', icon: '📈', label: 'Insights' },
   { path: '/app/profile', icon: '👤', label: 'Profile' },
 ];

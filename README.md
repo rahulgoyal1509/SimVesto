@@ -109,6 +109,23 @@ The app works without an API key — it uses smart fallback templates. To enable
 
 The free tier gives you 15 requests/minute which is plenty.
 
+### Setting up Groq chatbot (backend)
+
+The stock-market chatbot endpoint uses Groq via backend environment variables.
+
+1. Create `backend/.env` (or update your existing one)
+2. Add:
+
+```env
+GROQ_API_KEY=your_groq_api_key_here
+GROQ_MODEL=llama-3.3-70b-versatile
+```
+
+3. Restart backend server
+4. Open the app and use the **Market Chatbot** page (`/app/chat`)
+
+If `GROQ_API_KEY` is missing or invalid, chatbot falls back to built-in educational responses.
+
 ---
 
 ## How the simulation works

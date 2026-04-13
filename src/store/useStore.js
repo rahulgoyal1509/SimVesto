@@ -5,7 +5,7 @@ import { create } from 'zustand';
 import { initializeStocks, tickPrice } from '../engine/stockEngine';
 import { computeFearScore } from '../engine/fearEngine';
 
-const INITIAL_COINS = 10000;
+const INITIAL_COINS = 100000;
 
 // Load state from localStorage
 function loadState(key, defaultValue) {
@@ -199,7 +199,7 @@ const useStore = create((set, get) => ({
 
     try {
       const { api } = await import('../services/api.js');
-      const response = await api.buyStock(stock.symbol, quantity);
+      const response = await api.buyStock(stock.symbol, quantity, stock.currentPrice);
       
       if (!response.message || response.message !== 'Purchase successful') {
          return { success: false, message: response.message || 'Server error' };
@@ -208,34 +208,36 @@ const useStore = create((set, get) => ({
       // Update local coins from server
       const newCoins = response.balance;
 
-      const totalCost = parseFloat((stock.currentPrice * quantity).toFixed(2));
+      const executedPrice = Number(response?.trade?.price ?? stock.currentPrice);
+      const executedQty = Number(response?.trade?.quantity ?? quantity);
+      const totalCost = Number(response?.trade?.totalAmount ?? (executedPrice * executedQty));
       const existingIdx = holdings.findIndex(h => h.stockId === stockId);
       let newHoldings = [...holdings];
 
       if (existingIdx >= 0) {
         const existing = newHoldings[existingIdx];
-        const totalQty = existing.quantity + quantity;
-        const newAvg = (existing.avgBuyPrice * existing.quantity + stock.currentPrice * quantity) / totalQty;
+        const totalQty = existing.quantity + executedQty;
+        const newAvg = (existing.avgBuyPrice * existing.quantity + executedPrice * executedQty) / totalQty;
         newHoldings[existingIdx] = {
           ...existing,
           quantity: totalQty,
           avgBuyPrice: parseFloat(newAvg.toFixed(2)),
-          currentPrice: stock.currentPrice,
-          currentValue: parseFloat((totalQty * stock.currentPrice).toFixed(2)),
-          pnl: parseFloat((totalQty * stock.currentPrice - totalQty * newAvg).toFixed(2)),
-          pnlPct: parseFloat(((stock.currentPrice - newAvg) / newAvg * 100).toFixed(2)),
+          currentPrice: executedPrice,
+          currentValue: parseFloat((totalQty * executedPrice).toFixed(2)),
+          pnl: parseFloat((totalQty * executedPrice - totalQty * newAvg).toFixed(2)),
+          pnlPct: parseFloat(((executedPrice - newAvg) / newAvg * 100).toFixed(2)),
         };
       } else {
         newHoldings.push({
-          stockId, symbol: stock.symbol, name: stock.name, quantity,
-          avgBuyPrice: stock.currentPrice, currentPrice: stock.currentPrice,
+          stockId, symbol: stock.symbol, name: stock.name, quantity: executedQty,
+          avgBuyPrice: executedPrice, currentPrice: executedPrice,
           currentValue: totalCost, pnl: 0, pnlPct: 0, boughtAt: Date.now(),
         });
       }
 
       const order = {
         id: Date.now(), stockId, symbol: stock.symbol, name: stock.name,
-        type: 'BUY', quantity, price: stock.currentPrice, totalCost,
+        type: 'BUY', quantity: executedQty, price: executedPrice, totalCost,
         timestamp: Date.now(), status: 'COMPLETED',
       };
 
@@ -266,33 +268,35 @@ const useStore = create((set, get) => ({
 
     try {
       const { api } = await import('../services/api.js');
-      const response = await api.sellStock(stock.symbol, quantity);
+      const response = await api.sellStock(stock.symbol, quantity, stock.currentPrice);
 
       if (!response.message || response.message !== 'Sale successful') {
          return { success: false, message: response.message || 'Server error' };
       }
 
-      const saleValue = parseFloat((stock.currentPrice * quantity).toFixed(2));
-      const costBasis = parseFloat((holding.avgBuyPrice * quantity).toFixed(2));
-      const tradePnL = parseFloat((saleValue - costBasis).toFixed(2));
+      const executedPrice = Number(response?.trade?.price ?? stock.currentPrice);
+      const executedQty = Number(response?.trade?.quantity ?? quantity);
+      const saleValue = Number(response?.trade?.totalAmount ?? (executedPrice * executedQty));
+      const costBasis = parseFloat((holding.avgBuyPrice * executedQty).toFixed(2));
+      const tradePnL = Number(response?.trade?.realizedPnl ?? parseFloat((saleValue - costBasis).toFixed(2)));
 
       // Add coins
       const newCoins = response.balance;
 
       let newHoldings = [...holdings];
-      if (quantity >= holding.quantity) {
+      if (executedQty >= holding.quantity) {
         newHoldings.splice(holdingIdx, 1);
       } else {
         newHoldings[holdingIdx] = {
           ...holding,
-          quantity: holding.quantity - quantity,
-          currentValue: parseFloat(((holding.quantity - quantity) * stock.currentPrice).toFixed(2)),
+          quantity: holding.quantity - executedQty,
+          currentValue: parseFloat(((holding.quantity - executedQty) * executedPrice).toFixed(2)),
         };
       }
 
       const order = {
         id: Date.now(), stockId, symbol: stock.symbol, name: stock.name,
-        type: 'SELL', quantity, price: stock.currentPrice, totalCost: saleValue,
+        type: 'SELL', quantity: executedQty, price: executedPrice, totalCost: saleValue,
         pnl: tradePnL, timestamp: Date.now(), status: 'COMPLETED',
       };
 
@@ -369,7 +373,6 @@ const useStore = create((set, get) => ({
     const { user, orders, milestones, holdings } = get();
     if (!user) return;
     const newMilestones = [...milestones];
-    let bonusCoins = 0;
 
     const checks = [
       { id: 'first_trade', label: 'First Trade', condition: orders.length >= 1, reward: 200 },
@@ -383,14 +386,12 @@ const useStore = create((set, get) => ({
     checks.forEach(m => {
       if (!newMilestones.find(nm => nm.id === m.id) && m.condition) {
         newMilestones.push({ ...m, unlockedAt: Date.now() });
-        bonusCoins += m.reward;
       }
     });
 
-    if (bonusCoins > 0) {
+    if (newMilestones.length !== milestones.length) {
       set({ milestones: newMilestones });
       saveUserState(get().user, 'milestones', newMilestones);
-      get().updateUser({ iqCoins: (user.iqCoins || 0) + bonusCoins });
     }
   },
 

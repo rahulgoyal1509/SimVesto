@@ -155,7 +155,7 @@ const FEATURES = [
   { icon: '🤖', title: 'Monte Carlo AI Advisor', desc: 'Every trade gets evaluated through 1000 simulated scenarios. Know if your decision is good, average, or risky before you commit.', color: 'var(--accent-purple)' },
   { icon: '🧠', title: 'Behavioral Intelligence', desc: 'The platform silently learns from your interaction patterns to personalize suggestions and track your confidence growth.', color: 'var(--amber)' },
   { icon: '💬', title: 'AI Portfolio Narrator', desc: 'Get plain-English explanations of your portfolio performance, calibrated to your comfort level and financial literacy.', color: 'var(--blue)' },
-  { icon: '🪙', title: 'IQ Coin Economy', desc: 'Start with 10,000 IQ Coins. Earn more through profitable trades and milestones. Lose them on bad trades — just like real money.', color: 'var(--gold)' },
+  { icon: '🪙', title: 'IQ Coin Economy', desc: 'Start with 1,00,000 IQ Coins. Earn more through profitable trades and milestones. Lose them on bad trades — just like real money.', color: 'var(--gold)' },
   { icon: '🏆', title: 'Confidence Journey', desc: 'Watch your fear score drop as you gain experience. Unlock achievements and shareable confidence cards as you grow.', color: 'var(--green)' },
 ];
 
@@ -241,7 +241,7 @@ export default function Landing() {
 
           <motion.div className="landing-stats" variants={fadeUp}>
             <div className="landing-stat">
-              <div className="landing-stat-num">10,000</div>
+              <div className="landing-stat-num">1,00,000</div>
               <div className="landing-stat-label">Starting IQ Coins</div>
             </div>
             <div className="landing-stat">
@@ -300,7 +300,7 @@ export default function Landing() {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px', marginTop: '48px' }}>
           {[
-            { step: '01', title: 'Sign Up & Profile', desc: 'Answer a quick questionnaire about your investment knowledge and comfort level. Get 10,000 IQ Coins.' },
+            { step: '01', title: 'Sign Up & Profile', desc: 'Answer a quick questionnaire about your investment knowledge and comfort level. Get 1,00,000 IQ Coins.' },
             { step: '02', title: 'Explore & Trade', desc: 'Browse simulated stocks with real-time prices. Buy and sell using your IQ Coins—no real money.' },
             { step: '03', title: 'Get AI Analysis', desc: 'Every trade gets Monte Carlo simulation—1000 scenarios showing if your choice is smart.' },
             { step: '04', title: 'Build Confidence', desc: 'Watch your fear score drop as you learn. Earn milestones, unlock achievements, and become ready for real investing.' },

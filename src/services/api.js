@@ -40,19 +40,19 @@ export const api = {
   },
 
   // Trade
-  buyStock: async (symbol, quantity) => {
+  buyStock: async (symbol, quantity, price) => {
     const res = await fetch(`${BASE_URL}/trade/buy`, {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ symbol, quantity })
+      body: JSON.stringify({ symbol, quantity, price })
     });
     return res.json();
   },
-  sellStock: async (symbol, quantity) => {
+  sellStock: async (symbol, quantity, price) => {
     const res = await fetch(`${BASE_URL}/trade/sell`, {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ symbol, quantity })
+      body: JSON.stringify({ symbol, quantity, price })
     });
     return res.json();
   },
@@ -112,6 +112,16 @@ export const api = {
     const res = await fetch(`${BASE_URL}/fear/portfolio/recommendations`, {
       method: 'POST',
       headers: getAuthHeaders()
+    });
+    return res.json();
+  },
+
+  // Chatbot
+  askAdvisor: async (message, history = [], context = {}) => {
+    const res = await fetch(`${BASE_URL}/chat/message`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ message, history, ...context })
     });
     return res.json();
   }

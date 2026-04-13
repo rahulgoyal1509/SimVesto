@@ -27,7 +27,7 @@ export default function Login() {
         const wallet = await api.getWallet();
         setUser({
           _id: data._id, name: email.split('@')[0], email,
-          iqCoins: wallet.balance || 10000, fearScore: 65, fearClass: 'MEDIUM', literacyScore: 5,
+          iqCoins: wallet.balance || 100000, fearScore: 65, fearClass: 'MEDIUM', literacyScore: 5,
           totalTrades: 0, totalPnL: 0, sessionCount: 1, createdAt: Date.now(),
         });
         navigate('/app');

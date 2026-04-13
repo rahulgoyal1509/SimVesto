@@ -12,6 +12,7 @@ import simulationRoutes from './routes/simulationRoutes.js';
 import riskRoutes from './routes/riskRoutes.js';
 import stockRoutes from './routes/stockRoutes.js';
 import fearRoutes from './routes/fearRoutes.js';
+import chatRoutes from './routes/chatRoutes.js';
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ app.use('/api/simulation', simulationRoutes);
 app.use('/api/risk', riskRoutes);
 app.use('/api/stock', stockRoutes);
 app.use('/api/fear', fearRoutes);
+app.use('/api/chat', chatRoutes);
 
 app.get('/', (req, res) => {
   res.send('SimVesto API is running...');

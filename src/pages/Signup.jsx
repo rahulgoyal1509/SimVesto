@@ -116,7 +116,7 @@ export default function Signup() {
     const fearScore = Math.min(100, Math.round(avgFear / 3 * 100));
 
     setTimeout(async () => {
-      let walletBalance = 10000;
+      let walletBalance = 100000;
       try {
         const { api } = await import('../services/api.js');
         const wallet = await api.getWallet();

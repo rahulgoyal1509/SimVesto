@@ -9,6 +9,7 @@ import Trade from './pages/Trade';
 import Holdings from './pages/Holdings';
 import Orders from './pages/Orders';
 import Advisor from './pages/Advisor';
+import Chatbot from './pages/Chatbot';
 import Insights from './pages/Insights';
 import Profile from './pages/Profile';
 import AppLayout from './components/AppLayout';
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="holdings" element={<Holdings />} />
         <Route path="orders" element={<Orders />} />
         <Route path="advisor" element={<Advisor />} />
+        <Route path="chat" element={<Chatbot />} />
         <Route path="insights" element={<Insights />} />
         <Route path="profile" element={<Profile />} />
       </Route>

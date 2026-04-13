@@ -7,7 +7,7 @@ import { fetchLiveByFrontendSymbol } from './stockController.js';
 const round2 = (value) => Number(Number(value).toFixed(2));
 const roundQty = (value) => Number(Number(value).toFixed(4));
 const QTY_EPSILON = 0.0001;
-const TEMP_TEST_BALANCE = 10000;
+const TEMP_TEST_BALANCE = 100000;
 
 const parseQuantity = (value) => {
   const qty = Number(value);
@@ -17,6 +17,13 @@ const parseQuantity = (value) => {
   const normalizedQty = roundQty(qty);
   if (normalizedQty < QTY_EPSILON) return null;
   return normalizedQty;
+};
+
+const parseTradePrice = (value) => {
+  if (value === null || value === undefined || value === '') return null;
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return round2(n);
 };
 
 const getOrCreateWallet = async (userId) => {
@@ -62,7 +69,7 @@ const resolveTradeStock = async (symbol) => {
 
 export const buyStock = async (req, res) => {
   try {
-    const { symbol, quantity } = req.body;
+    const { symbol, quantity, price } = req.body;
     const qty = parseQuantity(quantity);
     if (!qty) return res.status(400).json({ message: 'Invalid quantity' });
     if (!symbol || typeof symbol !== 'string') {
@@ -72,7 +79,8 @@ export const buyStock = async (req, res) => {
     const stock = await resolveTradeStock(symbol);
     if (!stock) return res.status(404).json({ message: 'Stock not found' });
 
-    const tradePrice = round2(stock.currentPrice);
+    const clientTradePrice = parseTradePrice(price);
+    const tradePrice = clientTradePrice ?? round2(stock.currentPrice);
     const totalCost = round2(tradePrice * qty);
 
     const wallet = await getOrCreateWallet(req.user._id);
@@ -135,7 +143,7 @@ export const buyStock = async (req, res) => {
 
 export const sellStock = async (req, res) => {
   try {
-    const { symbol, quantity } = req.body;
+    const { symbol, quantity, price } = req.body;
     const qty = parseQuantity(quantity);
     if (!qty) return res.status(400).json({ message: 'Invalid quantity' });
     if (!symbol || typeof symbol !== 'string') {
@@ -153,7 +161,8 @@ export const sellStock = async (req, res) => {
     const stock = await resolveTradeStock(normalizedSymbol);
     if (!stock) return res.status(404).json({ message: 'Stock not found' });
 
-    const tradePrice = round2(stock.currentPrice);
+    const clientTradePrice = parseTradePrice(price);
+    const tradePrice = clientTradePrice ?? round2(stock.currentPrice);
     const totalRevenue = round2(tradePrice * qty);
     const avgBuyPrice = round2(portfolio.assets[assetIndex].avgBuyPrice || 0);
     const realizedPnl = round2((tradePrice - avgBuyPrice) * qty);
