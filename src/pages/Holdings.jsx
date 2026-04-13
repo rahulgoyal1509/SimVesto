@@ -16,6 +16,8 @@ export default function Holdings() {
   const geminiApiKey = useStore(s => s.geminiApiKey);
   const navigate = useNavigate();
   const [aiText, setAiText] = useState('');
+
+  const formatSymbol = (value) => String(value || '').replace(/^IQ/, '');
   const [aiLoading, setAiLoading] = useState(false);
 
   const enrichedHoldings = useMemo(() => {
@@ -41,7 +43,7 @@ export default function Holdings() {
   const totalPnLPct = totalInvested > 0 ? ((totalCurrent - totalInvested) / totalInvested * 100) : 0;
 
   const pieData = enrichedHoldings.map((h, i) => ({
-    name: h.symbol, value: h.currentValue, color: COLORS[i % COLORS.length],
+    name: formatSymbol(h.symbol), value: h.currentValue, color: COLORS[i % COLORS.length],
   }));
 
   const analyzePortfolio = async () => {
@@ -158,10 +160,18 @@ export default function Holdings() {
                   <tr key={h.stockId}>
                     <td>
                       <div className="stock-cell">
-                        <div className="stock-icon" style={{ background: `${h.color}20`, color: h.color }}>{h.symbol?.slice(2, 4)}</div>
+                        <div className="stock-icon" style={{ background: `${h.color}20`, color: h.color }}>
+                          {h.name
+                            .split(' ')
+                            .filter(Boolean)
+                            .slice(0, 2)
+                            .map((word) => word[0])
+                            .join('')
+                            .toUpperCase()}
+                        </div>
                         <div>
                           <div className="stock-name">{h.name}</div>
-                          <div className="stock-symbol">{h.symbol}</div>
+                          <div className="stock-symbol">{formatSymbol(h.symbol)}</div>
                         </div>
                       </div>
                     </td>
@@ -177,7 +187,7 @@ export default function Holdings() {
                       </span>
                     </td>
                     <td>
-                      <button className="btn btn-sm btn-outline" onClick={() => navigate(`/app/trade/${h.symbol}`)}>Trade</button>
+                      <button className="btn btn-sm btn-outline" onClick={() => navigate(`/app/trade/${formatSymbol(h.symbol)}`)}>Trade</button>
                     </td>
                   </tr>
                 ))}

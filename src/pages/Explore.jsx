@@ -8,7 +8,6 @@ const SECTORS = ['All', 'Technology', 'Finance', 'Energy', 'Healthcare', 'FMCG',
 
 export default function Explore() {
   const stocks = useStore(s => s.stocks);
-  const realtimeLoading = useStore(s => s.realtimeLoading);
   const realtimeError = useStore(s => s.realtimeError);
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
@@ -97,14 +96,14 @@ export default function Explore() {
                       .split(' ')
                       .filter(Boolean)
                       .slice(0, 2)
-                      .map(word => word[0])
+                      .map((word) => word[0])
                       .join('')
                       .toUpperCase()}
                   </div>
                   <div>
                     <div style={{ fontWeight: 600, fontSize: '14px' }}>{stock.name}</div>
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>
-                      {stock.symbol} · {stock.sector}
+                      {stock.symbol?.replace(/^IQ/, '')} · {stock.sector}
                     </div>
                   </div>
                 </div>

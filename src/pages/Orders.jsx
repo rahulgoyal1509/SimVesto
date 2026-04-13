@@ -6,6 +6,7 @@ export default function Orders() {
   const orders = useStore(s => s.orders);
   const fetchTradeHistory = useStore(s => s.fetchTradeHistory);
   const [filter, setFilter] = useState('ALL');
+  const formatSymbol = (value) => String(value || '').replace(/^IQ/, '');
 
   useEffect(() => {
     fetchTradeHistory();
@@ -34,19 +35,9 @@ export default function Orders() {
             onClick={() => setFilter(f)}
             style={filter === f ? {
               background: f === 'BUY' ? 'var(--green-dim)' : f === 'SELL' ? 'var(--red-dim)' : f === 'PROFIT' ? 'var(--green-dim)' : f === 'LOSS' ? 'var(--red-dim)' : 'var(--accent-purple-dim)',
-              color: f === 'BUY' ? 'var(--green)' : f === 'SELL' ? 'var(--red)' : f === 'PROFIT' ? 'var(--green)' : f === 'LOSS' ? 'var(--red)' : 'var(--accent-purple)',
-              border: `1px solid ${f === 'BUY' || f === 'PROFIT' ? 'var(--green)' : f === 'SELL' || f === 'LOSS' ? 'var(--red)' : 'var(--accent-purple)'}`,
-              borderRadius: 'var(--radius-full)',
-              padding: '6px 16px',
-              fontWeight: 700,
-            } : {
-              borderRadius: 'var(--radius-full)',
-              border: '1px solid var(--border-strong)',
-              padding: '6px 16px',
-              color: 'var(--text-primary)',
-              fontWeight: 600,
-              background: 'var(--bg-secondary)',
-            }}>
+              color: f === 'BUY' ? 'var(--green)' : f === 'SELL' ? 'var(--red)' : f === 'PROFIT' ? 'var(--green)' : f === 'LOSS' ? 'var(--red)' : 'var(--accent-purple-light)',
+              border: '1px solid transparent', borderRadius: 'var(--radius-full)', padding: '5px 16px',
+            } : { borderRadius: 'var(--radius-full)', border: '1px solid var(--border-default)', padding: '5px 16px' }}>
             {f}
           </button>
         ))}
@@ -86,7 +77,7 @@ export default function Orders() {
                     <div className="stock-cell">
                       <div>
                         <div className="stock-name">{order.name}</div>
-                        <div className="stock-symbol">{order.symbol}</div>
+                        <div className="stock-symbol">{formatSymbol(order.symbol)}</div>
                       </div>
                     </div>
                   </td>

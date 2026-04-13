@@ -2,8 +2,6 @@ import Stock from '../models/Stock.js';
 import yahooFinance from 'yahoo-finance2';
 
 const yahooClient = new yahooFinance();
-const normalizeSymbol = (symbol) => String(symbol || '').toUpperCase();
-
 const SYMBOL_ALIASES = {
   IQTCS: 'TCS',
   IQREL: 'RELIANCE',
@@ -27,8 +25,7 @@ const SYMBOL_ALIASES = {
   IQCRYP: 'CRYPTO',
 };
 
-const normalizeFrontendSymbol = (symbol) => SYMBOL_ALIASES[normalizeSymbol(symbol)] || normalizeSymbol(symbol);
-
+const normalizeFrontendSymbol = (symbol = '') => SYMBOL_ALIASES[symbol] || symbol;
 // Using the stocks list from the frontend's mock to initialize backend cache
 const MOCK_STOCKS = [
   { symbol: 'TCS', currentPrice: 3800 },
@@ -111,7 +108,8 @@ const fetchLiveByYahooTicker = async (yahooTicker) => {
 };
 
 export const fetchLiveByFrontendSymbol = async (frontendSymbol) => {
-  const candidates = FRONTEND_TO_YAHOO_SYMBOLS[frontendSymbol] || [frontendSymbol];
+  const normalizedSymbol = normalizeFrontendSymbol(frontendSymbol);
+  const candidates = FRONTEND_TO_YAHOO_SYMBOLS[normalizedSymbol] || [normalizedSymbol];
   let lastError = null;
 
   for (const ticker of candidates) {
@@ -119,7 +117,7 @@ export const fetchLiveByFrontendSymbol = async (frontendSymbol) => {
       const live = await fetchLiveByYahooTicker(ticker);
       return {
         ...live,
-        symbol: frontendSymbol,
+        symbol: normalizedSymbol,
         sourceSymbol: ticker,
       };
     } catch (error) {
@@ -127,7 +125,7 @@ export const fetchLiveByFrontendSymbol = async (frontendSymbol) => {
     }
   }
 
-  throw lastError || new Error(`No valid quote found for ${frontendSymbol}`);
+  throw lastError || new Error(`No valid quote found for ${normalizedSymbol}`);
 };
 
 export const initializeStocks = async (req, res) => {
@@ -155,10 +153,11 @@ export const getStocks = async (req, res) => {
 
 export const getStockBySymbol = async (req, res) => {
   try {
-    const symbol = normalizeFrontendSymbol(req.params.symbol);
-    const stock = await Stock.findOne({ symbol }) || await Stock.findOne({ symbol: normalizeSymbol(req.params.symbol) });
+    const incoming = (req.params.symbol || '').toUpperCase();
+    const normalized = normalizeFrontendSymbol(incoming);
+    const stock = await Stock.findOne({ symbol: normalized }) || await Stock.findOne({ symbol: incoming });
     if (!stock) return res.status(404).json({ message: 'Stock not found' });
-    res.json({ ...stock.toObject(), symbol });
+    res.json(stock);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -182,7 +181,7 @@ export const getLiveStocks = async (req, res) => {
       const dbStock = await Stock.findOne({ symbol });
       if (dbStock) {
         live.push({
-          symbol,
+          symbol: dbStock.symbol,
           price: Number(Number(dbStock.currentPrice || 0).toFixed(2)),
           change: 0,
           percent: 0,
@@ -230,18 +229,20 @@ export const getLiveStocks = async (req, res) => {
 export const getLiveStockBySymbol = async (req, res) => {
   try {
     const incoming = (req.params.symbol || '').toUpperCase();
-    const frontendSymbol = FRONTEND_TO_YAHOO_SYMBOLS[incoming]
-      ? incoming
-      : (BACKEND_TO_FRONTEND[incoming] || normalizeFrontendSymbol(incoming));
+    const frontendSymbol = normalizeFrontendSymbol(
+      FRONTEND_TO_YAHOO_SYMBOLS[incoming]
+        ? incoming
+        : (BACKEND_TO_FRONTEND[incoming] || incoming)
+    );
 
     try {
       const live = await fetchLiveByFrontendSymbol(frontendSymbol);
       return res.json(live);
     } catch (liveError) {
-      const dbStock = await Stock.findOne({ symbol: frontendSymbol });
+      const dbStock = await Stock.findOne({ symbol: frontendSymbol }) || await Stock.findOne({ symbol: incoming });
       if (dbStock) {
         return res.json({
-          symbol: frontendSymbol,
+          symbol: dbStock.symbol,
           price: Number(Number(dbStock.currentPrice || 0).toFixed(2)),
           change: 0,
           percent: 0,

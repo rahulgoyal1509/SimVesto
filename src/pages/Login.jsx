@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import useStore from '../store/useStore';
+import BackgroundGrid from '../components/BackgroundGrid';
+import Logo from '../components/Logo';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -42,63 +44,71 @@ export default function Login() {
   };
 
   return (
-    <div className="auth-container">
-      <motion.div className="auth-left"
-        initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
-        <div className="auth-form">
-          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '40px', color: 'var(--text-muted)', fontSize: '13px' }}>
-            ← Back to home
-          </Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '32px' }}>
-            <div className="landing-nav-brand-icon">SV</div>
-            <span style={{ fontSize: '18px', fontWeight: 700 }}>SimVesto</span>
-          </div>
-          <h1>Welcome back</h1>
-          <p>Log in to continue your trading journey.</p>
-
-          <form onSubmit={handleLogin}>
-            <div className="form-group">
-              <label className="form-label">Email</label>
-              <input className="form-input" type="email" placeholder="you@example.com"
-                value={email} onChange={e => setEmail(e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Password</label>
-              <input className="form-input" type="password" placeholder="••••••••"
-                value={password} onChange={e => setPassword(e.target.value)} />
-            </div>
-
-            {error && <div style={{ color: 'var(--red)', fontSize: '13px', marginBottom: '16px' }}>{error}</div>}
-
-            <button className="btn btn-primary" type="submit"
-              style={{ width: '100%', padding: '14px', fontSize: '15px', marginTop: '8px' }}
-              disabled={loading}>
-              {loading ? <span className="spinner" /> : 'Log In'}
-            </button>
-          </form>
-
-          <p style={{ marginTop: '24px', textAlign: 'center', fontSize: '13px', color: 'var(--text-muted)' }}>
-            Don't have an account? <Link to="/signup" style={{ color: 'var(--accent-purple-light)', fontWeight: 500 }}>Sign up free</Link>
-          </p>
-        </div>
-      </motion.div>
-
-      <div className="auth-right">
-        <div style={{ textAlign: 'center', padding: '40px' }}>
-          <div style={{ fontSize: '64px', marginBottom: '24px' }}>📈</div>
-          <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '28px', fontWeight: 400, marginBottom: '12px' }}>
-            Trade smarter,<br /><em style={{ fontStyle: 'italic', color: 'var(--accent-purple)' }}>fear less</em>
-          </h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '14px', maxWidth: '300px', margin: '0 auto' }}>
-            Your AI-powered simulation is waiting. Pick up right where you left off.
-          </p>
-        </div>
+    <div style={{ minHeight: '100vh', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      
+      <div style={{ position: 'fixed', inset: 0, zIndex: 0 }}>
+        <BackgroundGrid cameraOffset={true} />
         <div style={{
-          position: 'absolute', bottom: '-100px', right: '-100px',
-          width: '400px', height: '400px', borderRadius: '50%',
-          background: 'radial-gradient(circle, var(--accent-purple-dim) 0%, transparent 70%)',
+          position: 'absolute',
+          inset: 0,
+          background: 'radial-gradient(circle at center, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.4) 100%)',
+          pointerEvents: 'none'
         }} />
       </div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+        style={{
+          position: 'relative', zIndex: 10,
+          background: 'rgba(255, 255, 255, 0.85)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          padding: '48px',
+          borderRadius: '24px',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.08)',
+          border: '1px solid rgba(0,0,0,0.05)',
+          width: '100%', maxWidth: '440px', margin: '24px'
+        }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '32px' }}>
+          <Logo width="48" height="48" className="mb-4" />
+          <h1 style={{ fontSize: '28px', fontWeight: '800', marginTop: '16px', letterSpacing: '-0.02em' }}>Welcome back</h1>
+          <p style={{ color: 'var(--text-muted)' }}>Log in to continue your trading journey.</p>
+        </div>
+
+        <form onSubmit={handleLogin}>
+          <div className="form-group" style={{ marginBottom: '16px' }}>
+            <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)' }}>Email</label>
+            <input className="form-input" type="email" placeholder="you@example.com"
+              value={email} onChange={e => setEmail(e.target.value)} 
+              style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', background: '#fff' }}/>
+          </div>
+          <div className="form-group" style={{ marginBottom: '24px' }}>
+            <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)' }}>Password</label>
+            <input className="form-input" type="password" placeholder="••••••••"
+              value={password} onChange={e => setPassword(e.target.value)} 
+              style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', background: '#fff' }}/>
+          </div>
+
+          {error && <div style={{ color: 'var(--red)', fontSize: '13px', marginBottom: '16px', textAlign: 'center' }}>{error}</div>}
+
+          <button className="btn-groww" type="submit"
+            style={{ width: '100%', padding: '14px', fontSize: '16px' }}
+            disabled={loading}>
+            {loading ? <span className="spinner" /> : 'Log In →'}
+          </button>
+        </form>
+
+        <div style={{ marginTop: '24px', textAlign: 'center', display: 'flex', justifyContent: 'center', gap: '16px' }}>
+           <Link to="/" style={{ fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none' }}>
+             ← Home
+           </Link>
+           <span style={{ color: 'rgba(0,0,0,0.1)' }}>|</span>
+           <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+            No account? <Link to="/signup" style={{ color: 'var(--groww-teal)', fontWeight: 600 }}>Sign up free</Link>
+           </span>
+        </div>
+      </motion.div>
     </div>
   );
 }

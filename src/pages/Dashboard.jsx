@@ -34,6 +34,7 @@ export default function Dashboard() {
 
   const topGainers = useMemo(() => [...stocks].sort((a, b) => b.dayChangePct - a.dayChangePct).slice(0, 5), [stocks]);
   const topLosers = useMemo(() => [...stocks].sort((a, b) => a.dayChangePct - b.dayChangePct).slice(0, 5), [stocks]);
+  const formatSymbol = (value) => String(value || '').replace(/^IQ/, '');
 
   const fearColor = getFearColor(fearScore.score);
   const fearLabel = getFearLabel(fearScore.fearClass);
@@ -220,7 +221,7 @@ export default function Dashboard() {
               }}>
               <div>
                 <div style={{ fontWeight: 600, fontSize: '13px' }}>{stock.name}</div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>{stock.symbol}</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>{formatSymbol(stock.symbol)}</div>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: '13px' }}>₹{stock.currentPrice.toLocaleString()}</div>
@@ -245,7 +246,7 @@ export default function Dashboard() {
               }}>
               <div>
                 <div style={{ fontWeight: 600, fontSize: '13px' }}>{stock.name}</div>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>{stock.symbol}</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>{formatSymbol(stock.symbol)}</div>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: '13px' }}>₹{stock.currentPrice.toLocaleString()}</div>

@@ -9,7 +9,6 @@ const round2 = (value) => Number(Number(value).toFixed(2));
 const roundQty = (value) => Math.floor(Number(value || 0));
 const QTY_EPSILON = 0.0001;
 const TEMP_TEST_BALANCE = 100000;
-
 const SYMBOL_ALIASES = {
   IQTCS: 'TCS',
   IQREL: 'RELIANCE',
@@ -33,8 +32,7 @@ const SYMBOL_ALIASES = {
   IQCRYP: 'CRYPTO',
 };
 
-const normalizeSymbol = (symbol) => String(symbol || '').toUpperCase();
-const normalizeFrontendSymbol = (symbol) => SYMBOL_ALIASES[normalizeSymbol(symbol)] || normalizeSymbol(symbol);
+const normalizeTradeSymbol = (symbol = '') => SYMBOL_ALIASES[symbol] || symbol;
 
 const parseQuantity = (value) => {
   const qty = Number(value);
@@ -68,14 +66,11 @@ const getOrCreatePortfolio = async (userId) => {
 };
 
 const resolveTradeStock = async (symbol) => {
-  const normalizedSymbol = normalizeFrontendSymbol(symbol);
-  const legacySymbol = normalizeSymbol(symbol);
-  let stock = await Stock.findOne({ symbol: normalizedSymbol }) || await Stock.findOne({ symbol: legacySymbol });
+  const incomingSymbol = symbol.toUpperCase();
+  const normalizedSymbol = normalizeTradeSymbol(incomingSymbol);
+  let stock = await Stock.findOne({ symbol: normalizedSymbol }) || await Stock.findOne({ symbol: incomingSymbol });
 
   if (stock && Number.isFinite(Number(stock.currentPrice))) {
-    if (stock.symbol !== normalizedSymbol) {
-      stock.symbol = normalizedSymbol;
-    }
     return stock;
   }
 
@@ -125,8 +120,9 @@ export const buyStock = async (req, res) => {
 
     // Update portfolio
     const portfolio = await getOrCreatePortfolio(req.user._id);
-    const normalizedSymbol = symbol.toUpperCase();
-    const assetIndex = portfolio.assets.findIndex(a => a.symbol === normalizedSymbol);
+    const incomingSymbol = symbol.toUpperCase();
+    const normalizedSymbol = normalizeTradeSymbol(incomingSymbol);
+    const assetIndex = portfolio.assets.findIndex(a => a.symbol === normalizedSymbol || a.symbol === incomingSymbol);
     let quantityAfter = qty;
     let avgBuyPriceAfter = tradePrice;
 
@@ -194,9 +190,10 @@ export const sellStock = async (req, res) => {
       return res.status(400).json({ message: 'Invalid symbol' });
     }
 
-    const normalizedSymbol = symbol.toUpperCase();
+    const incomingSymbol = symbol.toUpperCase();
+    const normalizedSymbol = normalizeTradeSymbol(incomingSymbol);
     const portfolio = await getOrCreatePortfolio(req.user._id);
-    const assetIndex = portfolio.assets.findIndex(a => a.symbol === normalizedSymbol);
+    const assetIndex = portfolio.assets.findIndex(a => a.symbol === normalizedSymbol || a.symbol === incomingSymbol);
 
     if (assetIndex === -1 || (portfolio.assets[assetIndex].quantity + QTY_EPSILON) < qty) {
       return res.status(400).json({ message: 'Insufficient asset quantity' });

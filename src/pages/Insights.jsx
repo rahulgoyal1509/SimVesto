@@ -51,7 +51,7 @@ export default function Insights() {
 
       {/* Hero: Replace old SVGs with our new robust Badge */}
       <div style={{ display: 'flex', gap: '24px', marginBottom: '32px', flexWrap: 'wrap' }}>
-          <FearBadge score={fearScore.score} size="large" />
+          <FearBadge score={user?.fearScore || 80} size="large" />
           
           <div style={{ flex: 1 }}>
              <FearHistoryChart />
@@ -95,10 +95,10 @@ export default function Insights() {
           {sectorChartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={sectorChartData} layout="vertical">
-                <XAxis type="number" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
-                <YAxis dataKey="sector" type="category" tick={{ fontSize: 11, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} width={100} />
-                <Tooltip contentStyle={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)', borderRadius: '8px', fontSize: '12px' }} />
-                <Bar dataKey="count" fill="var(--accent-purple)" radius={[0, 4, 4, 0]} barSize={16} />
+                <XAxis type="number" tick={{ fontSize: 10, fill: '#5a5a72' }} axisLine={false} tickLine={false} />
+                <YAxis dataKey="sector" type="category" tick={{ fontSize: 11, fill: '#a0a0b8' }} axisLine={false} tickLine={false} width={100} />
+                <Tooltip contentStyle={{ background: '#111118', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', fontSize: '12px' }} />
+                <Bar dataKey="count" fill="#7c3aed" radius={[0, 4, 4, 0]} barSize={16} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -106,7 +106,6 @@ export default function Insights() {
           )}
         </motion.div>
       </div>
-
     </div>
   );
 }

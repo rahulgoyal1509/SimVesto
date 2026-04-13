@@ -61,7 +61,7 @@ function generatePriceHistory(stock, days = 30, pointsPerDay = 24) {
 
 function initializeStocks() {
   return STOCKS.map(stock => {
-    const history = generatePriceHistory(stock, 365, 24);
+    const history = generatePriceHistory(stock);
     const currentPrice = history[history.length - 1].price;
     const prevDayPrice = history[history.length - 25]?.price || stock.basePrice;
     const dayChange = currentPrice - prevDayPrice;
@@ -110,7 +110,7 @@ function tickPrice(stock) {
     dayLow: Math.min(stock.dayLow, rounded),
     dayChange: parseFloat(dayChange.toFixed(2)),
     dayChangePct: parseFloat(dayChangePct.toFixed(2)),
-    priceHistory: [...stock.priceHistory.slice(-10080), newPoint],
+    priceHistory: [...stock.priceHistory.slice(-720), newPoint],
     lastUpdate: Date.now(),
   };
 }

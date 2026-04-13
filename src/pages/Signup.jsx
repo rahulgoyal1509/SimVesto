@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import useStore from '../store/useStore';
+import BackgroundGrid from '../components/BackgroundGrid';
+import Logo from '../components/Logo';
 
 const QUESTIONS = [
   {
@@ -104,7 +106,6 @@ export default function Signup() {
   const finishQuiz = () => {
     setStep('analyzing');
 
-    // Compute fear score from answers
     let totalFear = 0;
     let litScore = 5;
     let count = 0;
@@ -123,9 +124,7 @@ export default function Signup() {
         if (Number.isFinite(Number(wallet?.balance))) {
           walletBalance = Number(wallet.balance);
         }
-      } catch {
-        // Keep fallback wallet balance when API call fails.
-      }
+      } catch { }
 
       const user = {
         id: Date.now(), name, email,
@@ -139,150 +138,165 @@ export default function Signup() {
     }, 2500);
   };
 
-  // ── FORM STEP ──
-  if (step === 'form') {
-    return (
-      <div className="auth-container">
-        <motion.div className="auth-left"
-          initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
-          <div className="auth-form">
-            <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '40px', color: 'var(--text-muted)', fontSize: '13px' }}>
-              ← Back to home
-            </Link>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '32px' }}>
-              <div className="landing-nav-brand-icon">SV</div>
-              <span style={{ fontSize: '18px', fontWeight: 700 }}>SimVesto</span>
+  // Base Layout Shell that houses the 3D canvas globally for all signup states
+  return (
+    <div style={{ minHeight: '100vh', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+      
+      <div style={{ position: 'fixed', inset: 0, zIndex: 0 }}>
+        <BackgroundGrid cameraOffset={true} />
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'radial-gradient(circle at center, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.4) 100%)',
+          pointerEvents: 'none'
+        }} />
+      </div>
+
+      <motion.div 
+        key={step}
+        initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.4 }}
+        style={{
+          position: 'relative', zIndex: 10,
+          background: 'rgba(255, 255, 255, 0.85)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          padding: '48px',
+          borderRadius: '24px',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.08)',
+          border: '1px solid rgba(0,0,0,0.05)',
+          width: '100%', maxWidth: step === 'quiz' ? '600px' : '440px'
+        }}
+      >
+        {step === 'form' && (
+          <div>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '32px' }}>
+              <Logo width="48" height="48" className="mb-4" />
+              <h1 style={{ fontSize: '28px', fontWeight: '800', marginTop: '16px', letterSpacing: '-0.02em' }}>Create account</h1>
+              <p style={{ color: 'var(--text-muted)' }}>Start trading fearlessly in under 60 seconds.</p>
             </div>
-            <h1>Create your account</h1>
-            <p>Start trading in under 60 seconds. No real money needed.</p>
 
             <form onSubmit={handleFormSubmit}>
-              <div className="form-group">
-                <label className="form-label">Name</label>
+              <div className="form-group" style={{ marginBottom: '16px' }}>
+                <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)' }}>Name</label>
                 <input className="form-input" type="text" placeholder="Your name"
-                  value={name} onChange={e => setName(e.target.value)} />
+                  value={name} onChange={e => setName(e.target.value)} 
+                  style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', background: '#fff' }}/>
               </div>
-              <div className="form-group">
-                <label className="form-label">Email</label>
+              <div className="form-group" style={{ marginBottom: '16px' }}>
+                <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)' }}>Email</label>
                 <input className="form-input" type="email" placeholder="you@example.com"
-                  value={email} onChange={e => setEmail(e.target.value)} />
+                  value={email} onChange={e => setEmail(e.target.value)} 
+                  style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', background: '#fff' }}/>
               </div>
-              <div className="form-group">
-                <label className="form-label">Password</label>
+              <div className="form-group" style={{ marginBottom: '24px' }}>
+                <label className="form-label" style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)' }}>Password</label>
                 <input className="form-input" type="password" placeholder="••••••••"
-                  value={password} onChange={e => setPassword(e.target.value)} />
+                  value={password} onChange={e => setPassword(e.target.value)} 
+                  style={{ width: '100%', padding: '12px 16px', borderRadius: '8px', border: '1px solid rgba(0,0,0,0.1)', background: '#fff' }}/>
               </div>
 
-              {error && <div style={{ color: 'var(--red)', fontSize: '13px', marginBottom: '16px' }}>{error}</div>}
+              {error && <div style={{ color: 'var(--red)', fontSize: '13px', marginBottom: '16px', textAlign: 'center' }}>{error}</div>}
 
-              <button className="btn btn-primary" type="submit"
-                style={{ width: '100%', padding: '14px', fontSize: '15px', marginTop: '8px' }}>
-                Continue to Profile Quiz →
+              <button className="btn-groww" type="submit"
+                style={{ width: '100%', padding: '14px', fontSize: '16px' }}>
+                Start Profile Quiz →
               </button>
             </form>
 
-            <p style={{ marginTop: '24px', textAlign: 'center', fontSize: '13px', color: 'var(--text-muted)' }}>
-              Already have an account? <Link to="/login" style={{ color: 'var(--accent-purple-light)', fontWeight: 500 }}>Log in</Link>
-            </p>
+            <div style={{ marginTop: '24px', textAlign: 'center', display: 'flex', justifyContent: 'center', gap: '16px' }}>
+               <Link to="/" style={{ fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none' }}>
+                 ← Home
+               </Link>
+               <span style={{ color: 'rgba(0,0,0,0.1)' }}>|</span>
+               <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
+                Have an account? <Link to="/login" style={{ color: 'var(--groww-teal)', fontWeight: 600 }}>Log in</Link>
+               </span>
+            </div>
           </div>
-        </motion.div>
+        )}
 
-        <div className="auth-right">
-          <div style={{ textAlign: 'center', padding: '40px' }}>
-              <div style={{ fontSize: '64px', marginBottom: '24px' }}>🪙</div>
-            <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: '28px', fontWeight: 400, marginBottom: '12px' }}>
-              Get <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>100,000 Coins</em>
-            </h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '14px', maxWidth: '300px', margin: '0 auto' }}>
-              Free tokens to start simulating trades. Earn more through profitable decisions.
-            </p>
-          </div>
-          <div style={{
-            position: 'absolute', bottom: '-100px', right: '-100px',
-            width: '400px', height: '400px', borderRadius: '50%',
-            background: 'radial-gradient(circle, var(--gold-dim) 0%, transparent 70%)',
-          }} />
-        </div>
-      </div>
-    );
-  }
-
-  // ── QUIZ STEP ──
-  if (step === 'quiz') {
-    const q = QUESTIONS[currentQ];
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)', padding: '24px' }}>
-        <div className="questionnaire">
-          <AnimatePresence mode="wait">
-            <motion.div key={currentQ} className="question-card"
-              initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }} transition={{ duration: 0.3 }}>
-              <div className="question-number">QUESTION {currentQ + 1} OF {QUESTIONS.length}</div>
-              <div className="question-text">{q.text}</div>
-
-              {q.type === 'slider' ? (
-                <div>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '32px', fontWeight: 700, color: 'var(--accent-purple)', marginBottom: '24px' }}>
-                    ₹{sliderValue.toLocaleString()}
-                  </div>
-                  <input type="range" className="question-slider" min={q.min} max={q.max} step={q.step}
-                    value={sliderValue} onChange={e => setSliderValue(Number(e.target.value))} />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginBottom: '32px' }}>
-                    <span>₹500</span><span>₹1,00,000</span>
-                  </div>
-                  <button className="btn btn-primary" onClick={handleSliderSubmit} style={{ width: '100%', padding: '14px' }}>
-                    Complete Profile →
-                  </button>
+        {step === 'quiz' && (
+          <div className="questionnaire" style={{ padding: '0' }}>
+            <AnimatePresence mode="wait">
+              <motion.div key={currentQ} className="question-card"
+                initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -50 }} transition={{ duration: 0.3 }}
+                style={{ background: 'transparent', boxShadow: 'none', padding: '0' }}>
+                <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--groww-teal)', letterSpacing: '0.05em', marginBottom: '8px' }}>
+                  QUESTION {currentQ + 1} OF {QUESTIONS.length}
                 </div>
-              ) : (
-                <div className="question-options">
-                  {q.options.map((opt, i) => (
-                    <motion.button key={i}
-                      className={`question-option ${answers[currentQ]?.value === opt.value ? 'selected' : ''}`}
-                      onClick={() => selectOption(currentQ, opt)}
-                      whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                      {opt.label}
-                    </motion.button>
-                  ))}
+                <div style={{ fontSize: '24px', fontWeight: '800', marginBottom: '32px', color: 'var(--groww-text)' }}>
+                  {QUESTIONS[currentQ].text}
                 </div>
-              )}
-            </motion.div>
-          </AnimatePresence>
 
-          <div className="question-progress">
-            {QUESTIONS.map((_, i) => (
-              <div key={i} className={`question-dot ${i === currentQ ? 'active' : i < currentQ ? 'completed' : ''}`} />
-            ))}
+                {QUESTIONS[currentQ].type === 'slider' ? (
+                  <div>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '32px', fontWeight: 700, color: 'var(--groww-teal)', marginBottom: '24px' }}>
+                      ₹{sliderValue.toLocaleString()}
+                    </div>
+                    <input type="range" className="question-slider" min={QUESTIONS[currentQ].min} max={QUESTIONS[currentQ].max} step={QUESTIONS[currentQ].step}
+                      value={sliderValue} onChange={e => setSliderValue(Number(e.target.value))} 
+                      style={{ width: '100%', accentColor: 'var(--groww-teal)' }}/>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '32px', marginTop: '8px' }}>
+                      <span style={{ fontWeight: 600 }}>₹500</span><span style={{ fontWeight: 600 }}>₹1,00,000</span>
+                    </div>
+                    <button className="btn-groww" onClick={handleSliderSubmit} style={{ width: '100%', padding: '14px' }}>
+                      Complete Profile →
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {QUESTIONS[currentQ].options.map((opt, i) => (
+                      <motion.button key={i}
+                        style={{
+                          width: '100%', textAlign: 'left', padding: '16px 20px', borderRadius: '12px',
+                          border: answers[currentQ]?.value === opt.value ? '2px solid var(--groww-teal)' : '1px solid rgba(0,0,0,0.1)',
+                          background: answers[currentQ]?.value === opt.value ? 'var(--groww-teal-dim)' : '#fff',
+                          color: 'var(--groww-text)', fontWeight: '600', cursor: 'pointer', fontSize: '16px'
+                        }}
+                        onClick={() => selectOption(currentQ, opt)}
+                        whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                        {opt.label}
+                      </motion.button>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '32px' }}>
+              {QUESTIONS.map((_, i) => (
+                <div key={i} style={{
+                  width: '8px', height: '8px', borderRadius: '50%',
+                  background: i === currentQ ? 'var(--groww-teal)' : i < currentQ ? 'var(--groww-teal-dim)' : 'rgba(0,0,0,0.1)'
+                }} />
+              ))}
+            </div>
           </div>
-        </div>
-      </div>
-    );
-  }
+        )}
 
-  // ── ANALYZING STEP ──
-  return (
-    <div className="analyzing-screen">
-      <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5 }}>
-        <div className="analyzing-spinner" style={{ width: '80px', height: '80px', borderWidth: '3px', margin: '0 auto 24px' }} />
-        <div className="analyzing-text">Analyzing your profile...</div>
-        <div className="analyzing-subtext" style={{ marginTop: '8px' }}>
-          Building your personalized AI investment assistant
-        </div>
-        <div style={{ display: 'flex', gap: '24px', justifyContent: 'center', marginTop: '32px' }}>
-          {['Fear Score', 'Literacy Level', 'Risk Profile'].map((item, i) => (
-            <motion.div key={i} style={{
-              padding: '8px 16px', borderRadius: 'var(--radius-md)',
-              background: 'var(--bg-surface)', border: '1px solid var(--border-default)',
-              fontSize: '12px', color: 'var(--text-muted)',
-            }}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 + i * 0.4 }}>
-              <span style={{ marginRight: '6px' }}>✓</span>{item}
-            </motion.div>
-          ))}
-        </div>
+        {step === 'analyzing' && (
+           <div style={{ textAlign: 'center', padding: '24px 0' }}>
+            <div className="analyzing-spinner" style={{ width: '64px', height: '64px', borderWidth: '3px', margin: '0 auto 24px', borderTopColor: 'var(--groww-teal)' }} />
+            <h2 style={{ fontSize: '24px', fontWeight: '800', marginBottom: '8px' }}>Analyzing profile...</h2>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>Building your AI investment sandbox</p>
+            
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center' }}>
+              {['Fear Matrix', 'Literacy Level', 'Risk Engine'].map((item, i) => (
+                <motion.div key={i} style={{
+                  padding: '6px 12px', borderRadius: '100px',
+                  background: 'var(--groww-teal-dim)', border: '1px solid rgba(0,D0,9C,0.2)',
+                  fontSize: '12px', color: 'var(--groww-teal)', fontWeight: '600'
+                }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 + i * 0.4 }}>
+                  ✓ {item}
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
       </motion.div>
     </div>
   );

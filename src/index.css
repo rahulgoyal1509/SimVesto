@@ -20,12 +20,12 @@
   --border-accent: rgba(29, 181, 132, 0.4);
 
   --text-primary: #111827;
-  --text-secondary: #4b5563;
-  --text-muted: #9ca3af;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
   --text-inverse: #ffffff;
 
   --accent-purple: #1db584;
-  --accent-purple-light: #d1f7ee;
+  --accent-purple-light: #0f766e;
   --accent-purple-dim: rgba(29, 181, 132, 0.12);
   --accent-purple-glow: rgba(29, 181, 132, 0.2);
 
@@ -1863,4 +1863,126 @@ input[type="range"]:focus {
 .glass-btn:hover {
   transform: scale(1.05);
   box-shadow: 0 0 30px rgba(124, 58, 237, 0.5);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   GROWW AESTHETIC - LANDING PAGE & DARK MODE
+   ════════════════════════════════════════════════════════════════ */
+
+:root {
+  --groww-teal: #059669; /* Emerald 600 - Darker Sea Green */
+  --groww-teal-dim: rgba(5, 150, 105, 0.1);
+  --groww-teal-glow: rgba(5, 150, 105, 0.4);
+  --groww-bg: #ffffff;
+  --groww-text: #111827;
+  --groww-text-muted: #6b7280;
+  --groww-surface: #ffffff; /* used for cards */
+  --groww-border: rgba(0,0,0,0.05);
+  --groww-nav-bg: rgba(255, 255, 255, 0.85);
+}
+
+.dark {
+  --groww-teal: #10b981; /* Emerald 500 */
+  --groww-teal-dim: rgba(16, 185, 129, 0.15);
+  --groww-teal-glow: rgba(16, 185, 129, 0.4);
+  --groww-bg: #0f172a;
+  --groww-text: #f8fafc;
+  --groww-text-muted: #94a3b8;
+  --groww-surface: #1e293b;
+  --groww-border: rgba(255,255,255,0.05);
+  --groww-nav-bg: rgba(15, 23, 42, 0.85);
+}
+
+.landing-groww {
+  background: var(--groww-bg);
+  color: var(--groww-text);
+  font-family: 'Inter', var(--font-body);
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.landing-groww .landing-nav {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 100;
+  background: var(--groww-nav-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--groww-border);
+  padding: 16px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.landing-groww .landing-title {
+  font-size: 64px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--groww-text);
+  max-width: 800px;
+  margin: 0 auto 24px;
+  letter-spacing: -0.02em;
+}
+
+.landing-groww .landing-subtitle {
+  font-size: 20px;
+  color: var(--groww-text-muted);
+  max-width: 650px;
+  margin: 0 auto 40px;
+  line-height: 1.5;
+}
+
+.btn-groww {
+  background: var(--groww-teal);
+  color: white;
+  padding: 14px 32px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px var(--groww-teal-dim);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-groww:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px var(--groww-teal-glow);
+  filter: brightness(1.1);
+}
+
+.feature-card-groww {
+  background: var(--groww-surface);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid var(--groww-border);
+  text-align: left;
+}
+
+.feature-card-groww:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+}
+
+.feature-card-groww .icon {
+  width: 48px;
+  height: 48px;
+  background: var(--groww-teal-dim);
+  color: var(--groww-teal);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 20px;
 }

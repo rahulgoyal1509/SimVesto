@@ -26,6 +26,7 @@ export default function AppLayout() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [searchReadOnly, setSearchReadOnly] = useState(true);
+  const formatSymbol = (value) => String(value || '').replace(/^IQ/, '');
   
   const fearModalData = useStore(s => s.fearModalData);
   const clearFearModal = useStore(s => s.clearFearModal);
@@ -114,7 +115,7 @@ export default function AppLayout() {
                 >
                   <div>
                     <div style={{ fontWeight: 600, fontSize: '13px' }}>{stock.name}</div>
-                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>{stock.symbol}</div>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--text-muted)' }}>{formatSymbol(stock.symbol)}</div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, fontSize: '13px' }}>₹{stock.currentPrice.toLocaleString()}</div>
@@ -148,7 +149,7 @@ export default function AppLayout() {
           {stocks.concat(stocks).map((stock, i) => (
             <div key={`${stock.id}-${i}`} className="ticker-item" style={{ cursor: 'pointer' }}
               onClick={() => navigate(`/app/trade/${stock.symbol}`)}>
-              <span className="symbol">{stock.symbol}</span>
+              <span className="symbol">{formatSymbol(stock.symbol)}</span>
               <span style={{ fontWeight: 600 }}>₹{stock.currentPrice.toLocaleString()}</span>
               <span className={`price-change ${stock.dayChangePct >= 0 ? 'up' : 'down'}`}>
                 {stock.dayChangePct >= 0 ? '▲' : '▼'}{Math.abs(stock.dayChangePct).toFixed(2)}%
