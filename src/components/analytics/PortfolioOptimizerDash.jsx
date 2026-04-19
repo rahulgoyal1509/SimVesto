@@ -10,7 +10,8 @@ export default function PortfolioOptimizerDash({ symbols }) {
     const fetchOptimization = async () => {
       setLoading(true);
       try {
-        const response = await fetch('http://127.0.0.1:8000/ml/optimize-portfolio', {
+        const apiUrl = import.meta.env.VITE_ML_URL || 'http://127.0.0.1:8000';
+        const response = await fetch(`${apiUrl}/ml/optimize-portfolio`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ symbols, risk_tolerance: 'medium' }),

@@ -39,7 +39,8 @@ export default function Analytics() {
 
   useEffect(() => {
       // Connect to FastAPI WebSocket for Feature 4: Anomaly Detection
-      const ws = new WebSocket('ws://127.0.0.1:8000/ws/market-anomalies');
+      const wsUrl = import.meta.env.VITE_ML_WS_URL || 'ws://127.0.0.1:8000/ws/market-anomalies';
+      const ws = new WebSocket(wsUrl);
       
       ws.onmessage = (event) => {
           const data = JSON.parse(event.data);

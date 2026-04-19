@@ -9,7 +9,8 @@ export default function SentimentDashboard({ portfolio, symbols }) {
     const fetchSentiment = async () => {
       setLoading(true);
       try {
-        const response = await fetch('http://127.0.0.1:8000/ml/sentiment-analysis', {
+        const apiUrl = import.meta.env.VITE_ML_URL || 'http://127.0.0.1:8000';
+        const response = await fetch(`${apiUrl}/ml/sentiment-analysis`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ symbols, user_portfolio: portfolio }),
