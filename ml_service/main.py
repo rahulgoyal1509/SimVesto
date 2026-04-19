@@ -11,6 +11,7 @@ from anomaly import MarketAnomalyDetector
 from datetime import datetime
 import asyncio
 import json
+from starlette.websockets import WebSocketDisconnect
 
 # Load environment variables
 load_dotenv()
@@ -56,10 +57,10 @@ class BehaviorRequest(BaseModel):
 sentiment_pipeline = MarketSentimentPipeline()
 
 @app.post("/ml/sentiment-analysis")
-async def analyze_sentiment(request: SentimentRequest):
+def analyze_sentiment(request: SentimentRequest):
     # Fetch news and tweets
-    news = await sentiment_pipeline.fetch_market_news(request.symbols)
-    tweets = await sentiment_pipeline.fetch_twitter_sentiment(request.symbols)
+    news = sentiment_pipeline.fetch_market_news(request.symbols)
+    tweets = sentiment_pipeline.fetch_twitter_sentiment(request.symbols)
     
     # Combine text
     all_text = []
@@ -111,7 +112,7 @@ async def analyze_sentiment(request: SentimentRequest):
 # Feature 2: Portfolio Optimization
 # ---------------------------------------------------------
 @app.post("/ml/optimize-portfolio")
-async def optimize_portfolio(request: OptimizeRequest):
+def optimize_portfolio(request: OptimizeRequest):
     try:
         # Note: In a production app, we would cache the optimizer per symbol group
         # initializing it on every request downloads historical data!
@@ -148,7 +149,7 @@ async def optimize_portfolio(request: OptimizeRequest):
 behavior_detector = BehavioralPatternDetector()
 
 @app.post("/ml/detect-behavioral-pattern")
-async def detect_behavior(request: BehaviorRequest):
+def detect_behavior(request: BehaviorRequest):
     try:
         behavior = behavior_detector.detect_behavior(request.user_history)
         return {
@@ -169,9 +170,9 @@ anomaly_detector = MarketAnomalyDetector()
 @app.websocket("/ws/market-anomalies")
 async def websocket_market_anomalies(websocket: WebSocket):
     await websocket.accept()
-    await websocket.send_json({"message": "Connected to Market Anomaly Detection Stream"})
-    
     try:
+        await websocket.send_json({"message": "Connected to Market Anomaly Detection Stream"})
+        
         # Simulate continuous market data feed for the hackathon demo
         import random
         while True:
@@ -199,5 +200,7 @@ async def websocket_market_anomalies(websocket: WebSocket):
                 })
                 
             await asyncio.sleep(1)  # Scan every 1 seconds
-    except Exception:
-        pass
+    except WebSocketDisconnect:
+        print("Market Anomaly Stream: Client disconnected normally.")
+    except Exception as e:
+        print(f"Market Anomaly Stream error: {e}")

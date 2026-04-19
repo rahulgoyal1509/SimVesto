@@ -39,7 +39,7 @@ class MarketSentimentPipeline:
             print(f"Failed to load FinBERT model: {e}")
             self.sentiment_pipeline = None
 
-    async def fetch_market_news(self, symbols: List[str]) -> List[Dict[str, str]]:
+    def fetch_market_news(self, symbols: List[str]) -> List[Dict[str, str]]:
         """Fetch real market news for given symbols."""
         if not self.news_client:
             print("News API key not configured. Using mocked news data.")
@@ -67,7 +67,7 @@ class MarketSentimentPipeline:
             
         return all_articles
 
-    async def fetch_twitter_sentiment(self, symbols: List[str]) -> List[str]:
+    def fetch_twitter_sentiment(self, symbols: List[str]) -> List[str]:
         """Fetch recent tweets mentioning the symbols."""
         if not self.twitter_client:
             return []
