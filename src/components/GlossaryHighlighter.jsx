@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { GLOSSARY_TERMS, GLOSSARY_MAP } from '../data/glossaryTerms';
 
@@ -104,8 +104,26 @@ export default function GlossaryHighlighter({ enabled }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [activeTerm, setActiveTerm] = useState(null);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const matcher = useMemo(() => buildGlossaryMatcher(), []);
+  const hideTimerRef = useRef(null);
+  const isOverTooltipRef = useRef(false);
+
+  const clearHideTimer = useCallback(() => {
+    if (hideTimerRef.current) {
+      clearTimeout(hideTimerRef.current);
+      hideTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleHide = useCallback(() => {
+    clearHideTimer();
+    hideTimerRef.current = setTimeout(() => {
+      if (!isOverTooltipRef.current) {
+        setActiveTerm(null);
+      }
+    }, 250);
+  }, [clearHideTimer]);
 
   useEffect(() => {
     const root = document.querySelector('main');
@@ -124,38 +142,45 @@ export default function GlossaryHighlighter({ enabled }) {
       if (!termNode) return;
       const key = termNode.dataset.termKey;
       if (!key || !GLOSSARY_MAP[key]) return;
-      setActiveTerm(GLOSSARY_MAP[key]);
-    };
 
-    const onMouseMove = (event) => {
-      const termNode = event.target.closest('.glossary-term');
-      if (!termNode) return;
-      setPosition({ x: event.clientX + 14, y: event.clientY + 14 });
+      clearHideTimer();
+
+      // Anchor tooltip to the term element's position (not the cursor)
+      const rect = termNode.getBoundingClientRect();
+      const tooltipWidth = 340;
+      const tooltipHeight = 220;
+
+      let x = rect.left + rect.width / 2 - tooltipWidth / 2;
+      let y = rect.bottom + 8;
+
+      // Keep within viewport
+      if (x < 12) x = 12;
+      if (x + tooltipWidth > window.innerWidth - 12) x = window.innerWidth - tooltipWidth - 12;
+      if (y + tooltipHeight > window.innerHeight - 12) {
+        y = rect.top - tooltipHeight - 8;
+      }
+
+      setTooltipPos({ x, y });
+      setActiveTerm(GLOSSARY_MAP[key]);
     };
 
     const onMouseOut = (event) => {
       if (event.target.closest('.glossary-term')) {
-        setTimeout(() => {
-          const hoverEl = document.querySelector(':hover');
-          if (!hoverEl || !hoverEl.closest('.glossary-term') && !hoverEl.closest('.glossary-tooltip')) {
-            setActiveTerm(null);
-          }
-        }, 60);
+        scheduleHide();
       }
     };
 
     root.addEventListener('mouseover', onMouseOver);
-    root.addEventListener('mousemove', onMouseMove);
     root.addEventListener('mouseout', onMouseOut);
 
     return () => {
       root.removeEventListener('mouseover', onMouseOver);
-      root.removeEventListener('mousemove', onMouseMove);
       root.removeEventListener('mouseout', onMouseOut);
       unwrapGlossaryTerms(root);
       setActiveTerm(null);
+      clearHideTimer();
     };
-  }, [enabled, matcher, location.pathname]);
+  }, [enabled, matcher, location.pathname, clearHideTimer, scheduleHide]);
 
   if (!enabled || !activeTerm) return null;
 
@@ -163,10 +188,17 @@ export default function GlossaryHighlighter({ enabled }) {
     <div
       className="glossary-tooltip"
       style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`,
+        left: `${tooltipPos.x}px`,
+        top: `${tooltipPos.y}px`,
       }}
-      onMouseLeave={() => setActiveTerm(null)}
+      onMouseEnter={() => {
+        isOverTooltipRef.current = true;
+        clearHideTimer();
+      }}
+      onMouseLeave={() => {
+        isOverTooltipRef.current = false;
+        setActiveTerm(null);
+      }}
     >
       <div className="glossary-tooltip-title">{activeTerm.term}</div>
       <div className="glossary-tooltip-row">
