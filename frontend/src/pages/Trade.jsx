@@ -527,7 +527,7 @@ export default function Trade() {
     <div>
       {/* Stock Header */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
             <div className="stock-icon" style={{ background: `${stock.color}20`, color: stock.color, width: '40px', height: '40px', fontSize: '14px' }}>
@@ -558,7 +558,7 @@ export default function Trade() {
       </motion.div>
 
       {/* Main Layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 340px', gap: '24px', alignItems: 'flex-start' }}>
+      <div className="trade-page-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 340px', gap: '24px', alignItems: 'flex-start' }}>
         {/* Left — Chart */}
         <div style={{ minWidth: 0 }}>
           <motion.div className="card" initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ padding: '20px', marginBottom: '16px' }}>

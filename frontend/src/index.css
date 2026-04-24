@@ -5393,3 +5393,600 @@ h3 {
   color: #e2e8f0;
   border-color: rgba(255, 255, 255, 0.15);
 }
+
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   RESPONSIVE — MOBILE & TABLET
+   Complete responsive overrides for all screen sizes.
+   Breakpoints: 1024px (tablet), 768px (small tablet), 480px (phone)
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ─── TABLET (≤ 1024px) ─────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+
+  /* Navbar: tighten spacing */
+  .top-navbar {
+    padding: 0 16px;
+  }
+
+  .navbar-left {
+    gap: 12px;
+  }
+
+  .navbar-menu {
+    gap: 10px;
+  }
+
+  .navbar-link {
+    font-size: 12px;
+  }
+
+  .navbar-search {
+    max-width: 280px;
+  }
+
+  /* Grids: 2 columns */
+  .grid-4 {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .grid-3 {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  /* Landing page */
+  .landing-title {
+    font-size: 48px !important;
+  }
+
+  .landing-subtitle {
+    font-size: 16px !important;
+  }
+
+  /* Dashboard chart row */
+  .dashboard-chart-row {
+    flex-direction: column !important;
+  }
+
+  .dashboard-chart-card {
+    max-width: 100% !important;
+  }
+
+  /* Trade page: stack columns */
+  .trade-page-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ─── SMALL TABLET / LARGE PHONE (≤ 768px) ──────────────────────────────────── */
+@media (max-width: 768px) {
+
+  /* ── NAVBAR ── */
+  .top-navbar {
+    padding: 0 12px;
+    height: 52px;
+    gap: 8px;
+  }
+
+  /* Hide desktop nav links — sidebar handles navigation */
+  .navbar-menu {
+    display: none !important;
+  }
+
+  .navbar-left {
+    gap: 8px;
+    flex: 0 0 auto;
+  }
+
+  /* Hide logo text, keep icon */
+  .navbar-logo span {
+    display: none !important;
+  }
+
+  .navbar-logo {
+    gap: 0;
+  }
+
+  .logo-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 11px;
+  }
+
+  /* Search bar — shrink */
+  .navbar-search {
+    max-width: 160px;
+    padding: 6px 12px;
+  }
+
+  .navbar-search input {
+    font-size: 13px;
+  }
+
+  .navbar-search svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Right section — compact */
+  .navbar-right {
+    gap: 8px;
+    flex: 0 0 auto;
+  }
+
+  .coin-display {
+    padding: 4px 8px;
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .coin-icon {
+    font-size: 12px;
+  }
+
+  .navbar-profile {
+    width: 30px;
+    height: 30px;
+    font-size: 11px;
+  }
+
+  /* Hide glossary toggle on mobile */
+  .glossary-toggle {
+    display: none !important;
+  }
+
+  /* ── SIDEBAR HAMBURGER ── */
+  .sidebar-hamburger {
+    width: 34px;
+    height: 34px;
+  }
+
+  .sidebar-hamburger svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* ── TICKER STRIP ── */
+  .ticker-strip {
+    top: 52px !important;
+    height: 36px;
+    padding: 0 8px;
+  }
+
+  .ticker-item {
+    gap: 6px;
+    font-size: 11px;
+  }
+
+  .ticker-item .symbol {
+    font-size: 11px;
+  }
+
+  .ticker-content {
+    gap: 20px;
+  }
+
+  /* ── MAIN CONTENT ── */
+  main {
+    margin-top: 88px !important;
+    padding: 12px 10px !important;
+  }
+
+  /* ── GRIDS ── */
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    padding: 14px;
+    border-radius: 12px;
+  }
+
+  .glass-card {
+    border-radius: 12px;
+  }
+
+  /* ── STAT CARDS ── */
+  .stat-card {
+    padding: 14px !important;
+  }
+
+  .stat-card-value {
+    font-size: 20px !important;
+  }
+
+  .stat-card-label {
+    font-size: 11px !important;
+  }
+
+  /* ── DASHBOARD ── */
+  .dashboard-chart-row {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .dashboard-chart-card {
+    max-width: 100% !important;
+    min-height: 280px !important;
+  }
+
+  /* Chatbot card — full width */
+  .chatbot-dashboard-card {
+    min-height: 200px !important;
+  }
+
+  .chatbot-dashboard-card.expanded {
+    min-height: 400px !important;
+  }
+
+  /* ── TRADE PAGE ── */
+  .trade-page-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  /* Tab buttons */
+  .tab-group {
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    font-size: 13px !important;
+    padding: 8px 14px !important;
+  }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    padding: 12px !important;
+  }
+
+  .modal {
+    max-width: 100% !important;
+    margin: 0 8px;
+    border-radius: 16px !important;
+    padding: 20px 16px !important;
+  }
+
+  /* ── BADGES ── */
+  .badge {
+    font-size: 10px;
+    padding: 4px 10px;
+  }
+
+  /* ── BUTTONS ── */
+  .btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  .btn-lg {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+
+  /* ── LANDING PAGE ── */
+  .landing-nav {
+    padding: 0 12px !important;
+    height: 56px;
+  }
+
+  .landing-nav-links,
+  .nav-links {
+    display: none !important;
+  }
+
+  .landing-title {
+    font-size: 32px !important;
+    line-height: 1.15 !important;
+  }
+
+  .landing-subtitle {
+    font-size: 14px !important;
+    padding: 0 8px;
+  }
+
+  .btn-groww {
+    padding: 14px 28px !important;
+    font-size: 15px !important;
+  }
+
+  /* Feature cards — stack */
+  .feature-card-groww {
+    padding: 20px !important;
+  }
+
+  /* ── PROFILE PAGE ── */
+  .profile-stats-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
+  .profile-header-inner {
+    flex-direction: column !important;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .profile-header-actions {
+    margin-left: 0 !important;
+    justify-content: center;
+  }
+
+  .profile-stat-value {
+    font-size: 18px !important;
+  }
+
+  /* ── ANALYTICS PAGE ── */
+  .analytics-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── ARENA MODE ── */
+  .arena-root {
+    padding: 12px 8px !important;
+  }
+
+  .arena-workspace-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .arena-persona-sidebar {
+    position: static !important;
+    width: 100% !important;
+    max-height: none !important;
+  }
+
+  /* ── SEARCH DROPDOWN ── */
+  .search-dropdown {
+    left: -60px;
+    right: -60px;
+    max-height: 300px;
+  }
+
+  /* ── GLOSSARY ── */
+  .glossary-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .glossary-hero {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+
+  /* ── COIN HISTORY ── */
+  .coin-history-summary {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  /* ── ADVISOR PAGE ── */
+  .advisor-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── COUNTERPARTY MODAL ── */
+  .counterparty-modal {
+    max-width: 95vw !important;
+    padding: 16px 14px !important;
+  }
+
+  /* ── FEAR FEEDBACK MODAL ── */
+  .fear-modal {
+    max-width: 95vw !important;
+    padding: 20px 16px !important;
+  }
+
+  /* ── TEXT SIZES ── */
+  .text-5xl {
+    font-size: 28px !important;
+  }
+
+  .text-4xl {
+    font-size: 24px !important;
+  }
+
+  .text-3xl {
+    font-size: 20px !important;
+  }
+
+  h1 {
+    font-size: 24px !important;
+  }
+
+  h2 {
+    font-size: 20px !important;
+  }
+
+  h3 {
+    font-size: 16px !important;
+  }
+}
+
+/* ─── PHONE (≤ 480px) ────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+
+  /* Navbar even tighter */
+  .top-navbar {
+    padding: 0 8px;
+    height: 48px;
+  }
+
+  .logo-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+    border-radius: 6px;
+  }
+
+  /* Hide search on very small screens */
+  .navbar-search {
+    display: none !important;
+  }
+
+  .navbar-right {
+    gap: 6px;
+  }
+
+  .coin-display {
+    padding: 3px 6px;
+    font-size: 10px;
+  }
+
+  .navbar-profile {
+    width: 28px;
+    height: 28px;
+    font-size: 10px;
+  }
+
+  /* Ticker */
+  .ticker-strip {
+    top: 48px !important;
+    height: 32px;
+  }
+
+  .ticker-item {
+    font-size: 10px;
+    gap: 4px;
+  }
+
+  /* Main content */
+  main {
+    margin-top: 80px !important;
+    padding: 8px 8px !important;
+  }
+
+  /* Cards */
+  .card {
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  /* Landing */
+  .landing-title {
+    font-size: 26px !important;
+  }
+
+  .landing-subtitle {
+    font-size: 13px !important;
+  }
+
+  .btn-groww {
+    padding: 12px 22px !important;
+    font-size: 14px !important;
+    width: 100%;
+  }
+
+  /* Stats */
+  .stat-card {
+    padding: 10px !important;
+  }
+
+  .stat-card-value {
+    font-size: 18px !important;
+  }
+
+  /* Profile */
+  .profile-stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Coin history */
+  .coin-history-summary {
+    grid-template-columns: 1fr !important;
+  }
+
+  .coin-history-chip {
+    padding: 12px;
+    min-height: 70px;
+  }
+
+  /* Grids */
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    gap: 8px !important;
+  }
+
+  /* Buttons */
+  .btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  /* Arena */
+  .arena-root {
+    padding: 8px 6px !important;
+  }
+
+  /* Modals */
+  .modal {
+    margin: 0 4px;
+    padding: 16px 12px !important;
+  }
+
+  /* Headings */
+  h1 { font-size: 20px !important; }
+  h2 { font-size: 18px !important; }
+  h3 { font-size: 15px !important; }
+
+  .text-5xl { font-size: 24px !important; }
+  .text-4xl { font-size: 20px !important; }
+}
+
+/* ─── LANDSCAPE PHONE ──────────────────────────────────────────────────────── */
+@media (max-height: 500px) and (orientation: landscape) {
+  .top-navbar {
+    height: 44px;
+  }
+
+  .ticker-strip {
+    top: 44px !important;
+    height: 28px;
+  }
+
+  main {
+    margin-top: 72px !important;
+  }
+}
+
+/* ─── TOUCH DEVICE HELPERS ──────────────────────────────────────────────────── */
+@media (hover: none) and (pointer: coarse) {
+  /* Remove hover transforms on touch (prevents sticky hover) */
+  .card:hover {
+    transform: none;
+  }
+
+  .btn:hover {
+    transform: none;
+  }
+
+  .btn-primary:hover {
+    transform: none;
+  }
+
+  .glossary-card:hover {
+    transform: none;
+  }
+
+  /* Larger tap targets */
+  .tab-btn {
+    min-height: 44px;
+  }
+
+  .btn {
+    min-height: 40px;
+  }
+
+  .sidebar-link {
+    min-height: 44px;
+  }
+
+  .ticker-item {
+    min-height: 36px;
+  }
+}
