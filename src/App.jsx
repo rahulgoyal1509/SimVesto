@@ -15,6 +15,7 @@ import Analytics from './pages/Analytics';
 import Profile from './pages/Profile';
 import CoinHistory from './pages/CoinHistory';
 import Glossary from './pages/Glossary';
+import Arena from './pages/Arena';
 import AppLayout from './components/AppLayout';
 
 function ProtectedRoute({ children }) {
@@ -42,6 +43,7 @@ export default function App() {
         <Route path="analytics" element={<Analytics />} />
         <Route path="glossary" element={<Glossary />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="arena" element={<Arena />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

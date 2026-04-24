@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { path: '/app/explore', label: 'Explore' },
   { path: '/app/advisor', label: 'AI Advisor' },
   { path: '/app/analytics', label: 'Market Pulse' },
+  { path: '/app/arena', label: '⚔ Arena', isArena: true },
 ];
 
 export default function AppLayout() {
@@ -100,7 +101,9 @@ export default function AppLayout() {
                 key={item.path}
                 to={item.path}
                 end={item.end}
-                className={({ isActive }) => `navbar-link ${isActive ? 'active' : ''}`}
+                className={({ isActive }) =>
+                  `navbar-link ${isActive ? 'active' : ''} ${item.isArena ? 'arena-nav-link' : ''}`
+                }
               >
                 {item.label}
               </NavLink>

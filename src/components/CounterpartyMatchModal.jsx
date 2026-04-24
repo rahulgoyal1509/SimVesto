@@ -93,7 +93,7 @@ function MatchResult({ match, stock, quantity, userFearScore, onAccept, onSkip }
       transition={{ duration: 0.4 }}
     >
       {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: 24 }}>
+      <div style={{ textAlign: 'center', marginBottom: 16 }}>
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
@@ -125,7 +125,7 @@ function MatchResult({ match, stock, quantity, userFearScore, onAccept, onSkip }
       {/* Fear Score Comparison */}
       <div style={{
         background: 'var(--bg-surface-2)', borderRadius: 12,
-        padding: '14px 16px', marginBottom: 16,
+        padding: '12px 14px', marginBottom: 12,
         border: '1px solid var(--border-subtle)',
       }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
@@ -170,7 +170,7 @@ function MatchResult({ match, stock, quantity, userFearScore, onAccept, onSkip }
       {/* Price Comparison */}
       <div style={{
         background: 'var(--bg-surface-2)', borderRadius: 12,
-        padding: '14px 16px', marginBottom: 16,
+        padding: '12px 14px', marginBottom: 12,
         border: '1px solid var(--border-subtle)',
       }}>
         <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
@@ -228,9 +228,9 @@ function MatchResult({ match, stock, quantity, userFearScore, onAccept, onSkip }
 
       {/* Behavioral Insight */}
       <div style={{
-        padding: '12px 16px', borderRadius: 10,
+        padding: '10px 14px', borderRadius: 10,
         background: 'var(--bg-surface-2)', borderLeft: `3px solid ${matchColor}`,
-        marginBottom: 20, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.65,
+        marginBottom: 14, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6,
         fontStyle: 'italic',
       }}>
         "{insight}"
@@ -290,7 +290,7 @@ export default function CounterpartyMatchModal({
             position: 'fixed', inset: 0, zIndex: 1000,
             background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '20px',
+            padding: '16px',
           }}
         >
           <motion.div
@@ -301,16 +301,28 @@ export default function CounterpartyMatchModal({
             onClick={(e) => e.stopPropagation()}
             style={{
               width: '100%', maxWidth: 480,
+              maxHeight: '90vh',
+              overflowY: 'auto',
               background: 'var(--bg-surface)',
               border: '1px solid var(--border-strong)',
               borderRadius: 20,
-              padding: '28px 24px 24px',
+              padding: '22px 20px 20px',
               boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
               position: 'relative',
+              scrollbarWidth: 'thin',
+              scrollbarColor: 'var(--border-default) transparent',
             }}
           >
-            {/* Title bar */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            {/* Title bar — sticky so ✕ always visible */}
+            <div style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              marginBottom: 20,
+              position: 'sticky', top: 0, zIndex: 10,
+              background: 'var(--bg-surface)',
+              paddingBottom: 12,
+              borderBottom: '1px solid var(--border-subtle)',
+              marginLeft: -20, marginRight: -20, paddingLeft: 20, paddingRight: 20,
+            }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: 20 }}>🤝</span>
                 <span style={{ fontSize: 15, fontWeight: 700 }}>Behavioral Counterparty Matching</span>
