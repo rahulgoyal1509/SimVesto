@@ -2,8 +2,8 @@
 // Manages user, stocks, portfolio, orders, and behavior
 
 import { create } from "zustand";
-import { initializeStocks, tickPrice } from "../engine/stockEngine";
-import { computeFearScore } from "../engine/fearEngine";
+import { initializeStocks, tickPrice } from "../engine/stockEngine.js";
+import { computeFearScore } from "../engine/fearEngine.js";
 
 const INITIAL_COINS = 100000;
 const round2 = (v) => parseFloat(Number(v || 0).toFixed(2));
@@ -263,7 +263,7 @@ const useStore = create((set, get) => ({
 
     try {
       const { fetchRealtimeStocks, mergeLivePrice } =
-        await import("../services/realtimeStocks");
+        await import("../services/realtimeStocks.js");
       const liveMap = await fetchRealtimeStocks();
 
       set((state) => ({
