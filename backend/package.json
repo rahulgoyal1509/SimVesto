@@ -5,7 +5,7 @@
   "description": "SimVesto Hackathon Backend",
   "type": "module",
   "scripts": {
-    "start": "node backend/server.js",
+    "start": "node server.js",
     "dev": "nodemon server.js",
     "build": "npm install"
   },
