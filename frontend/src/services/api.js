@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:5000/api';
+const BASE_URL = 'https://simvesto-b0mg.onrender.com/api';
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
