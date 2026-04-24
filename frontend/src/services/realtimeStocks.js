@@ -1,4 +1,4 @@
-const REALTIME_BASE_URL = 'http://127.0.0.1:5000/api/stock';
+const REALTIME_BASE_URL = 'https://simvesto-b0mg.onrender.com//api/stock';
 
 const FRONTEND_TO_BACKEND_SYMBOL = {
   TCS: 'TCS.NS',

@@ -42,7 +42,7 @@ export default function PortfolioOptimizerDash({ symbols }) {
     setLoading(true);
     setOffline(false);
     try {
-      const apiUrl = import.meta.env.VITE_ML_URL || 'http://127.0.0.1:8000';
+      const apiUrl = import.meta.env.VITE_ML_URL || 'https://simvesto-c67n.onrender.com';
       const res = await fetchWithTimeout(
         `${apiUrl}/ml/optimize-portfolio`,
         {

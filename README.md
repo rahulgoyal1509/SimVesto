@@ -71,7 +71,7 @@ npm run dev
 cd ml_service
 pip install fastapi uvicorn transformers torch scipy scikit-learn yfinance pandas numpy newsapi-python websockets python-dotenv
 python -m uvicorn main:app --reload
-# The ML service actively boots on http://127.0.0.1:8000
+# The ML service actively boots on https://simvesto-c67n.onrender.com
 ```
 
 **Open a NEW Terminal Window (Leave both backends running):**

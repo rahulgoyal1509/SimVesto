@@ -5,7 +5,7 @@ const connectDB = async () => {
   try {
     let uri = process.env.MONGO_URI;
     
-    if (uri.includes('127.0.0.1')) {
+    if (uri.includes('https://simvesto-b0mg.onrender.com')) {
       const mongoServer = await MongoMemoryServer.create();
       uri = mongoServer.getUri();
       console.log('Using in-memory MongoDB for local testing.');
