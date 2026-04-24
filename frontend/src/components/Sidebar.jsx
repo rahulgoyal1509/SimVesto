@@ -1,7 +1,56 @@
 import { NavLink } from 'react-router-dom';
 import { useEffect } from 'react';
 
-const SIDEBAR_NAV = [
+const SIDEBAR_NAV_PRIMARY = [
+  {
+    path: '/app',
+    label: 'Dashboard',
+    end: true,
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect width="7" height="9" x="3" y="3" rx="1" /><rect width="7" height="5" x="14" y="3" rx="1" /><rect width="7" height="9" x="14" y="12" rx="1" /><rect width="7" height="5" x="3" y="16" rx="1" />
+      </svg>
+    ),
+  },
+  {
+    path: '/app/explore',
+    label: 'Explore',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+      </svg>
+    ),
+  },
+  {
+    path: '/app/advisor',
+    label: 'AI Advisor',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 8V4H8" /><rect width="16" height="12" x="4" y="8" rx="2" /><path d="M2 14h2" /><path d="M20 14h2" /><path d="M15 13v2" /><path d="M9 13v2" />
+      </svg>
+    ),
+  },
+  {
+    path: '/app/analytics',
+    label: 'Market Pulse',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+      </svg>
+    ),
+  },
+  {
+    path: '/app/arena',
+    label: '⚔ Arena',
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><path d="m10 13-2 2 2 2" /><path d="m14 17 2-2-2-2" />
+      </svg>
+    ),
+  },
+];
+
+const SIDEBAR_NAV_SECONDARY = [
   {
     path: '/app/holdings',
     label: 'Holdings',
@@ -84,9 +133,28 @@ export default function Sidebar({ isOpen, onClose, glossaryEnabled, toggleGlossa
           </button>
         </div>
 
-        {/* Nav Links */}
+        {/* Nav Links — Primary (main pages) */}
         <nav className="sidebar-nav">
-          {SIDEBAR_NAV.map((item) => (
+          {SIDEBAR_NAV_PRIMARY.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              end={item.end}
+              className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+              onClick={onClose}
+            >
+              <span className="sidebar-link-icon">{item.icon}</span>
+              <span className="sidebar-link-label">{item.label}</span>
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* Divider */}
+        <div className="sidebar-divider" />
+
+        {/* Nav Links — Secondary (utility pages) */}
+        <nav className="sidebar-nav">
+          {SIDEBAR_NAV_SECONDARY.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
