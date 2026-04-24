@@ -1,16 +1,16 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import path from 'path'
 
+// vite.config.js lives inside /frontend/ — root is already correct.
+// outDir: 'dist' puts build output at /frontend/dist/ which Vercel serves.
 export default defineConfig({
-  root: path.resolve(__dirname, 'frontend'),
   plugins: [react()],
   server: {
     port: 5173,
     open: true
   },
   build: {
-    outDir: path.resolve(__dirname, 'dist'),
+    outDir: 'dist',
     emptyOutDir: true,
   }
 })
