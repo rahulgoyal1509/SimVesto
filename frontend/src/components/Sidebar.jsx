@@ -133,24 +133,24 @@ export default function Sidebar({ isOpen, onClose, glossaryEnabled, toggleGlossa
           </button>
         </div>
 
-        {/* Nav Links — Primary (main pages) */}
-        <nav className="sidebar-nav">
-          {SIDEBAR_NAV_PRIMARY.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.end}
-              className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
-              onClick={onClose}
-            >
-              <span className="sidebar-link-icon">{item.icon}</span>
-              <span className="sidebar-link-label">{item.label}</span>
-            </NavLink>
-          ))}
-        </nav>
-
-        {/* Divider */}
-        <div className="sidebar-divider" />
+        {/* Nav Links — Primary (main pages) — only visible on mobile */}
+        <div className="sidebar-mobile-only">
+          <nav className="sidebar-nav">
+            {SIDEBAR_NAV_PRIMARY.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.end}
+                className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+                onClick={onClose}
+              >
+                <span className="sidebar-link-icon">{item.icon}</span>
+                <span className="sidebar-link-label">{item.label}</span>
+              </NavLink>
+            ))}
+          </nav>
+          <div className="sidebar-divider" />
+        </div>
 
         {/* Nav Links — Secondary (utility pages) */}
         <nav className="sidebar-nav">

@@ -2471,6 +2471,17 @@ input[type="range"]:focus {
   letter-spacing: 0.05em;
 }
 
+/* Hide primary nav links in sidebar on desktop — they're already in the top navbar */
+.sidebar-mobile-only {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .sidebar-mobile-only {
+    display: block;
+  }
+}
+
 /* ══════════════════════════════════════════════════════════════════
    DASHBOARD — Chart Row + Chatbot Card
    ══════════════════════════════════════════════════════════════════ */
