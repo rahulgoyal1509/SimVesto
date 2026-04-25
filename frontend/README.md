@@ -69,7 +69,14 @@ npm run dev
 ```bash
 # 4. Boot the ML Python Microservice
 cd ml_service
-pip install fastapi uvicorn transformers torch scipy scikit-learn yfinance pandas numpy newsapi-python websockets python-dotenv
+.\setup_ml.bat (if u have Python 3.11 or Python 3.12 version then skip this) #this is to download the perfect python version.
+
+
+**Open a NEW Terminal Window (Leave both backends running):**
+
+```bash
+# 5. Boot the ML Python Microservice
+cd ml_service
 python -m uvicorn main:app --reload
 # The ML service actively boots on https://simvesto-c67n.onrender.com
 ```
@@ -77,15 +84,17 @@ python -m uvicorn main:app --reload
 **Open a NEW Terminal Window (Leave both backends running):**
 
 ```bash
-# 5. Boot the Interactive Frontend
+# 6. Boot the Interactive Frontend
 # (If inside ml_service, go back to SimVesto root folder)
 cd SimVesto
+cd frontend
 npm install
 npm run dev
+# The frontend actively boots on https://sim-vesto-xwbj.vercel.app/
 ```
 
 **Accessing the Platform:**
-Navigate to `http://localhost:5173` in your browser. 
+Navigate to `http://localhost:5173` in your browser. or navigate to 'https://sim-vesto-xwbj.vercel.app/' in browser
 The entire simulation suite is now entirely live!
 
 ### 3. API Key Configurations (Optional)
