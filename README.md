@@ -60,7 +60,7 @@ cd SimVesto
 # 3. Setup and Boot the Node Backend 
 cd backend
 npm install
-npm run dev
+npm run dev  or   node server.js
 # The backend will boot securely on https://simvesto-b0mg.onrender.com
 ```
 
